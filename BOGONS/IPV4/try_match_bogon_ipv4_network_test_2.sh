@@ -19,7 +19,7 @@ while true; do
 done
 
 if [ -z "$ADDRESS_TYPE" ]; then
-	echo "$0; you must provide a MAC address (try '--address-type source' or '--address-type destianation' without quotes.).">&2;
+	echo "$0; you must provide an IPV4 address 'type' (try '--address-type source' or '--address-type destianation' without quotes.).">&2;
 	exit 2;
 fi
 
@@ -35,7 +35,5 @@ case "$ADDRESS_TYPE" in
 esac
 
 echo "\t\tip $IP_ADDRESS_TYPE 198.51.100.0/24 \\";
-echo "\t\tlog prefix \"Block Bogon IPV4 $ADDRESS_TYPE address - Test Network 2 198.51.100.0 - 198.51.100.255 - \" \\";
-echo "\t\tlog level warn \\";
-echo "\t\tlog flags skuid flags ether \\";
-echo "\t\tdrop;";
+
+exit 0;
