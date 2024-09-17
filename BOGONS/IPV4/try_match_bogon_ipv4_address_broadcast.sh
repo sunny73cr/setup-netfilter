@@ -35,7 +35,5 @@ case "$ADDRESS_TYPE" in
 esac
 
 echo "\t\tip $IPV4_ADDRESS_TYPE = 255.255.255.255 \\";
-echo "\t\tlog prefix \"Block Bogon IPV4 $ADDRESS_TYPE address - Broadcast IPV4 255.255.255.255 - \" \\";
-echo "\t\tlog level warn \\";
-echo "\t\tlog flags skuid flags ether \\";
-echo "\t\tdrop;";
+
+exit 0;
