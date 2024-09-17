@@ -43,14 +43,14 @@ usage () {
 
 if [ "$1" = "" ]; then usage; fi
 
-SOURCE_MAC_ADDRESS="";
+MAC_ADDRESS_SOURCE="";
 PROBED_ADDRESS="";
 PROBED_NETWORK="";
 
 while true; do
 	case "$1" in
 		--source-mac-address)
-			SOURCE_MAC_ADDRESS="$2";
+			MAC_ADDRESS_SOURCE="$2";
 			if [ "$#" -lt 2 ]; then usage; else shift 2; fi
 		;;
 
@@ -68,8 +68,8 @@ while true; do
 	esac
 done
 
-if [ -n "$SOURCE_MAC_ADDRESS" ]; then
-	IS_SOURCE_MAC_VALID=$($DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS --address "$SOURCE_MAC_ADDRESS");
+if [ -n "$MAC_ADDRESS_SOURCE" ]; then
+	IS_SOURCE_MAC_VALID=$($DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS --address "$MAC_ADDRESS_SOURCE");
 
 	case $IS_SOURCE_MAC_VALID in
 		"true" ) ;;
@@ -83,7 +83,7 @@ if [ -n "$SOURCE_MAC_ADDRESS" ]; then
 		;;
 	esac
 
-	IS_SOURCE_MAC_BANNED=$($DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE --address "$SOURCE_MAC_ADDRESS");
+	IS_SOURCE_MAC_BANNED=$($DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE --address "$MAC_ADDRESS_SOURCE");
 
 	case $IS_SOURCE_MAC_BANNED in
 		"true" )
@@ -144,8 +144,8 @@ echo "\t\tarp plen 4 \\";
 
 echo "\t\tarp operation 1 \\";
 
-if [ -n "$SOURCE_MAC_ADDRESS" ]; then
-	echo "\t\tarp saddr ether $SOURCE_MAC_ADDRESS \\";
+if [ -n "$MAC_ADDRESS_SOURCE" ]; then
+	echo "\t\tarp saddr ether $MAC_ADDRESS_SOURCE \\";
 else
 	echo "\t\t#arp saddr ether unknown - please consider the security implications";
 fi
@@ -157,7 +157,7 @@ echo "\t\tarp saddr ip 0.0.0.0 \\";
 if [ -n "$TO_PROBE" ]; then
 	echo "\t\tarp daddr ip $TO_PROBE \\";
 else
-	echo "\t\tarp daddr ip unknown - please consider the security implications";
+	echo "\t\t#arp daddr ip unknown - please consider the security implications";
 fi
 
 exit 0;
