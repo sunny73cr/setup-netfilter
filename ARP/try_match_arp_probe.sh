@@ -1,19 +1,5 @@
 #!/bin/sh
 
-DEPENDENCY_SCRIPT_PATH_VALIDATE_INTERFACE_BY_NAME="./SCRIPT_HELPERS/check_interface_exists_by_name.sh";
-
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_INTERFACE_BY_NAME" ]; then
-	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_INTERFACE_BY_NAME\" is missing or not executable";
-	exit 3;
-fi
-
-DEPENDENCY_SCRIPT_PATH_VALIDATE_VLAN_ID="./SCRIPT_HELPERS/check_vlan_id_is_valid.sh";
-
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_VLAN_ID" ]; then
-	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_VLAN_ID\" is missing or not executable";
-	exit 3;
-fi
-
 DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS="./SCRIPT_HELPERS/check_mac_address_is_valid.sh";
 
 if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS" ]; then
@@ -39,20 +25,6 @@ DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK="./SCRIPT_HELPERS/check_ipv4_networ
 
 if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK" ]; then
 	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" is missing or is not executable." 1>&2;
-	exit 3;
-fi
-
-DEPENDENCY_SCRIPT_PATH_TRY_MATCH_INTERFACE="./LAYER_1/try_match_interface.sh";
-
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_TRY_MATCH_INTERFACE" ]; then
-	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_TRY_MATCH_INTERFACE\" is missing or is not executable";
-	exit 3;
-fi
-
-DEPENDENCY_SCRIPT_PATH_TRY_MATCH_ETHERNET_HEADER="./ETHERNET/try_match_ethernet_header.sh";
-
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_TRY_MATCH_ETHERNET_HEADER" ]; then
-	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_TRY_MATCH_ETHERNET_HEADER\" is missing or is not executable";
 	exit 3;
 fi
 
