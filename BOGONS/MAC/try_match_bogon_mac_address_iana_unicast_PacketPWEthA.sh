@@ -17,7 +17,7 @@ while true; do
 done;
 
 if [ -z "$ADDRESS_TYPE" ]; then
-	echo "$0; you must supply an address type. (try '--address-type source' or '--address-type destination' without quotes)">&2;
+	echo "$0; you must supply a MAC address 'type' (try '--address-type source' or '--address-type destination' without quotes)">&2;
 	exit 2;
 fi
 
@@ -30,9 +30,6 @@ case "$ADDRESS_TYPE" in
 	;;
 esac
 
-echo "\t\tether $ETHER_ADDRESS_TYPE = 00:00:5E:00:52:00 \\";
-echo "\t\tlog level warn \\";
-echo "\t\tlog prefix \"Block Bogon MAC $ADDRESS_TYPE address IANA OUI Packet PWE th A 00:00:5E:00:52:00 - \" \\";
-echo "\t\tdrop;";
+echo "\t\tether $ETHER_ADDRESS_TYPE 00:00:5E:00:52:00 \\";
 
 exit 0;
