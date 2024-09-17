@@ -34,6 +34,6 @@ case "$ADDRESS_TYPE" in
 	;;
 esac
 
-echo "\t\tip $IPV4_ADDRESS_TYPE = 255.255.255.255 \\";
+echo "\t\tip $IPV4_ADDRESS_TYPE 255.255.255.255 \\";
 
 exit 0;
