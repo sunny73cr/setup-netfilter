@@ -36,7 +36,5 @@ case "$ADDRESS_TYPE" in
 esac
 
 echo "\t\tip $IP_ADDRESS_TYPE 192.0.0.9 \\";
-echo "\t\tlog prefix \"Block Bogon IPV4 $ADDRESS_TYPE address - Port Control Protocol Anycast 192.0.0.9 - \" \\";
-echo "\t\tlog level warn \\";
-echo "\t\tlog flags skuid flags ether \\";
-echo "\t\tdrop;";
+
+exit 0;
