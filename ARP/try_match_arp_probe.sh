@@ -1,0 +1,191 @@
+#!/bin/sh
+
+DEPENDENCY_SCRIPT_PATH_VALIDATE_INTERFACE_BY_NAME="./SCRIPT_HELPERS/check_interface_exists_by_name.sh";
+
+if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_INTERFACE_BY_NAME" ]; then
+	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_INTERFACE_BY_NAME\" is missing or not executable";
+	exit 3;
+fi
+
+DEPENDENCY_SCRIPT_PATH_VALIDATE_VLAN_ID="./SCRIPT_HELPERS/check_vlan_id_is_valid.sh";
+
+if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_VLAN_ID" ]; then
+	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_VLAN_ID\" is missing or not executable";
+	exit 3;
+fi
+
+DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS="./SCRIPT_HELPERS/check_mac_address_is_valid.sh";
+
+if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS" ]; then
+	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\" is missing or is not executable." 1>&2;
+	exit 3;
+fi
+
+DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE="./SCRIPT_HELPERS/check_mac_address_source_is_banned.sh";
+
+if [ ! -x "$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE" ]; then
+	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" is missing or is not executable." 1>&2;
+	exit 3;
+fi
+
+DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS="./SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
+
+if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS" ]; then
+	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" is missing or is not executable." 1>&2;
+	exit 3;
+fi
+
+DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK="./SCRIPT_HELPERS/check_ipv4_network_is_valid.sh";
+
+if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK" ]; then
+	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" is missing or is not executable." 1>&2;
+	exit 3;
+fi
+
+DEPENDENCY_SCRIPT_PATH_TRY_MATCH_INTERFACE="./LAYER_1/try_match_interface.sh";
+
+if [ ! -x "$DEPENDENCY_SCRIPT_PATH_TRY_MATCH_INTERFACE" ]; then
+	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_TRY_MATCH_INTERFACE\" is missing or is not executable";
+	exit 3;
+fi
+
+DEPENDENCY_SCRIPT_PATH_TRY_MATCH_ETHERNET_HEADER="./ETHERNET/try_match_ethernet_header.sh";
+
+if [ ! -x "$DEPENDENCY_SCRIPT_PATH_TRY_MATCH_ETHERNET_HEADER" ]; then
+	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_TRY_MATCH_ETHERNET_HEADER\" is missing or is not executable";
+	exit 3;
+fi
+
+usage () {
+	echo "Usage: $0 <arguments>">&2;
+	echo "ARGUMENTS:">&2;
+	echo "optional: --source-mac-address <string>">&2;
+	echo "Note: it is strongly recommended to supply a source MAC address.">&2;
+	echo "">&2;
+	echo "optional: --probed-address-ipv4 <X.X.X.X eg. 10.0.0.1>">&2
+	echo "optional: --probed-network-ipv4 <X.X.X.X/X eg. 10.0.0.0/8 or 10.0.0.1/32>" 1>&2;
+	echo "Note: it is strongly recommended to supply either an address or a network.">&2;
+	echo "Note: you cannot supply both an address and a network.">&2;
+	exit 2;
+}
+
+if [ "$1" = "" ]; then usage; fi
+
+SOURCE_MAC_ADDRESS="";
+PROBED_ADDRESS="";
+PROBED_NETWORK="";
+
+while true; do
+	case "$1" in
+		--source-mac-address)
+			SOURCE_MAC_ADDRESS="$2";
+			if [ "$#" -lt 2 ]; then usage; else shift 2; fi
+		;;
+
+		--probed-address)
+			PROBED_ADDRESS="$2";
+			if [ "$#" -lt 2 ]; then usage; else shift 2; fi
+		;;
+
+		--probed-network)
+			PROBED_NETWORK="$2";
+			if [ "$#" -lt 2 ]; then usage; else shift 2; fi
+		;;
+		"") break; ;;
+		*) usage; ;;
+	esac
+done
+
+if [ -n "$SOURCE_MAC_ADDRESS" ]; then
+	IS_SOURCE_MAC_VALID=$($DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS --address "$SOURCE_MAC_ADDRESS");
+
+	case $IS_SOURCE_MAC_VALID in
+		"true" ) ;;
+		"false" )
+			echo "$0; source mac address is invalid." >&2;
+			exit 2;
+		;;
+		* )
+			echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\" produced incorrect output" >&2;
+			exit 3;
+		;;
+	esac
+
+	IS_SOURCE_MAC_BANNED=$($DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE --address "$SOURCE_MAC_ADDRESS");
+
+	case $IS_SOURCE_MAC_BANNED in
+		"true" )
+			echo "$0; source mac address is not permitted." >&2;
+			exit 2;
+		;;
+		"false" ) ;;
+		* )
+			echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" produced incorrect output" >&2;
+			exit 3;
+		;;
+	esac
+fi
+
+TO_PROBE="":
+
+if [ -n "$PROBED_ADDRESS" ]; then
+	IS_PROBED_ADDRESS_VALID=$($DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS --address "$PROBED_ADDRESS");
+
+	case "$IS_PROBED_ADDRESS_VALID" in
+		"true") ;;
+		"false")
+			echo "$0: the ipv4 address you supplied was invalid. Try: X.X.X.X where X is a number from 0-255">&2;
+			exit 2;
+		;;
+		*)
+			echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" produced incorrect output.">&2;
+			exit 3;
+		;;
+	esac
+
+	TO_PROBE="$PROBED_ADDRESS";
+fi
+
+if [ -n "$PROBED_NETWORK" ]; then
+	IS_PROBED_NETWORK_VALID=$($DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK --address "$PROBED_NETWORK");
+
+	case "$IS_PROBED_NETWORK_VALID" in
+		"true") ;;
+		"false")
+			echo "$0: the ipv4 network you supplied was not an address or network in CIDR form.">&2;
+			exit 2;
+		;;
+		*)
+			echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" produced incorrect output.">&2;
+			exit 3;
+		;;
+	esac
+
+	TO_PROBE="$PROBED_NETWORK";
+fi
+
+echo "\t\tarp htype 1 \\";
+echo "\t\tarp hlen 6 \\";
+
+echo "\t\tarp ptype 0x0800 \\";
+echo "\t\tarp plen 4 \\";
+
+echo "\t\tarp operation 1 \\";
+
+if [ -n "$SOURCE_MAC_ADDRESS" ]; then
+	echo "\t\tarp saddr ether $SOURCE_MAC_ADDRESS \\";
+else
+	echo "\t\t#arp saddr ether unknown - please consider the security implications";
+fi
+
+echo "\t\tarp daddr ether 00:00:00:00:00:00 \\";
+
+echo "\t\tarp saddr ip 0.0.0.0 \\";
+
+if [ -n "$TO_PROBE" ]; then
+	echo "\t\tarp daddr ip $TO_PROBE \\";
+else
+	echo "\t\tarp daddr ip unknown - please consider the security implications";
+fi
+
+exit 0;
