@@ -1,42 +1,40 @@
 #!/bin/sh
 
-SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID="./SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
+if [ -z "$ENV_SETUP_NFT" ]; then echo "Set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.">&2; exit 4; fi
+
+SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
+SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_is_valid.sh";
+SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_service_id_is_valid.sh";
 
 if [ ! -x $SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID ]; then
 	echo "$0: script dependency failure: $SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID is missing or is not executable.">&2;
 	exit 3;
 fi
 
-
-SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID="./SCRIPT_HELPERS/check_ipv4_network_is_valid.sh";
-
-if [ ! -x $SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID ]; then
-	echo "$0: script dependency failure: $SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID is missing or is not executable.">&2;
+if [ ! -x $SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID ]; then
+	echo "$0: script dependency failure: $SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID is missing or is not executable.">&2;
 	exit 3;
 fi
-
-SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID="./SCRIPT_HELPERS/check_service_id_is_valid.sh";
 
 if [ ! -x $SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID ]; then
 	echo "$0: script dependency failure: $SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID is missing or is not executable.">&2;
 	exit 3;
 fi
 
-usage() {
+print_usage_and_exit() {
 	echo "Usage: $0 <arguments>">&2;
 	echo "Either:">&2;
 	echo "1. --server-address-ipv4 X.X.X.X (where X is 0-255)">&2;
-	echo "2. --server-network-ipv4 X.X.X.X/X (four octets where X is 0-255, and a mask where X is 1-32)">&2;
-	echo "3. no restrictions on the server address.">&2;
+	echo "2. no restrictions on the server address.">&2;
 	echo "">&2;
 	echo "Either:">&2;
 	echo "1. --requested-address-ipv4 X.X.X.X (where X is 0-255)">&2;
-	echo "2. --requested-network-ipv4 X.X.X.X/X (four octets where X is 0-255, and a mask where X is 1-32)">&2;
-	echo "3. no restrictions on the client (requested) address.">&2;
+	echo "2. no restrictions on the client (requested) address.">&2;
 	echo "">&2;
-	echo "Note: you cannot supply both an address and a network.">&2;
-	echo "Note: it is strongly recommended to supply both a server address/network or a client address/network.">&2;
-	echo "Note: it is strongly preferred to use a singular IP over a network (or range), in terms of firewall performance and security.">&2;
+	echo "Note: it is strongly recommended to supply both a server and client address.">&2;
+	echo "">&2;
+	echo "--client-mac-address XX:XX:XX:XX:XX:XX (where X is a-f, or A-F, or 0-9 - hexadecimal)">&2;
+	echo "Note: it is strongly recommended to supply the client mac address, if you know it.">&2;
 	echo "">&2;
 	echo "--dhcp-service-uid X (where X is 1-65535)">&2;
 	echo "Note: it is strongly recommended to supply a service 'socket' user id.">&2;
@@ -46,156 +44,181 @@ usage() {
 	exit 2;
 }
 
-if [ "$1" = "" ]; then usage; fi
+if [ "$1" = "" ]; then print_usage_and_exit; fi
 
-check_success() {
+confirm_exit_code_is_zero() {
 	if [ "$?" -ne 0 ]; then
-		echo "cannot try to match udp dhcp server ackowledgement">&2;
+		echo "$0: cannot try to match udp dhcp server ackowledgement">&2;
 		exit 2;
 	fi
 }
 
 SERVER_ADDRESS="";
-SERVER_NETWORK="";
 REQUESTED_ADDRESS="";
-REQUESTED_NETWORK="";
+CLIENT_MAC_ADDRESS="";
 SERVICE_USER_ID="";
 
 while true; do
 	case $1 in
 		--server-address-ipv4)
-			SERVER_ADDRESS=$2;
 			#not enough argyments
-			if [ $# -lt 2 ]; then usage; else shift 2;
-		;;
-		--server-network-ipv4)
-			SERVER_NETWORK=$2;
-			#not enough argyments
-			if [ $# -lt 2 ]; then usage; else shift 2;
+			if [ $# -lt 2 ]; then
+				print_usage_and_exit;
+			#if no value, or another argument follows
+			elif [ "$2" = "" ] || [ "$(echo "$2" | grep -P '^-')" != "" ]; then
+				print_usage_and_exit;
+			else
+				SERVER_ADDRESS=$2;
+				shift 2;
+			fi
 		;;
 		--requested-address-ipv4)
-			REQUESTED_ADDRESS=$2;
-			#not enough argyments
-			if [ $# -lt 2 ]; then usage; else shift 2;
+			if [ $# -lt 2 ]; then
+				#not enough argyments
+				print_usage_and_exit;
+			#if no value, or another argument follows
+			elif [ "$2" = "" ] || [ "$(echo "$2" | grep -P '^-')" != "" ]; then
+				#if no value
+				print_usage_and_exit;
+			else
+				REQUESTED_ADDRESS=$2;
+				shift 2;
+			fi
 		;;
-		--requested-network-ipv4)
-			REQUESTED_NETWORK=$2;
-			#not enough argyments
-			if [ $# -lt 2 ]; then usage; else shift 2;
+		--client-mac-address)
+			if [ $# -lt 2 ]; then
+				#not enough argyments
+				print_usage_and_exit;
+			#if no value, or another argument follows
+			elif [ "$2" = "" ] || [ "$(echo "$2" | grep -P '^-')" != "" ]; then
+				#if no value
+				print_usage_and_exit;
+			else
+				CLIENT_MAC_ADDRESS=$2;
+				shift 2;
+			fi
 		;;
 		--dhcp-service-uid)
-			SERVICE_ID=$2;
-			#not enough argyments
-			if [ $# -lt 2 ]; then usage; else shift 2;
+			if [ $# -lt 2 ]; then
+				#not enough argyments
+				print_usage_and_exit;
+			elif [ "$2" = "" ] || [ "$(echo "$2" | grep -P '^-')" != "" ]; then
+				#if no value
+				print_usage_and_exit;
+			else
+				SERVICE_ID=$2;
+				shift 2;
+			fi
+
 		;;
 		"") break; ;;
 		*)
-			echo "Unrecognised argument: $1 $2">&2:
+			echo "$0: unrecognised argument: $1 $2">&2:
 			exit 2;
 		;;
 	esac
 done
 
-if [ -n $SERVER_ADDRESS ] && [ -n $SERVER_NETWORK ]; then
-	echo "$0: packet source is ambiguous: you cannot supply both a client address and network.">&2;
-	exit 2;
-fi
-
-if [ -n $SERVER_ADDRESS ]; then
+if [ -n "$SERVER_ADDRESS" ]; then
 	IS_SERVER_ADDRESS_VALID=$($SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address $SERVER_ADDRESS);
-	check_success;
+	confirm_exit_code_is_zero;
 fi
 
-if [ -n $SERVER_NETWORK ]; then
-	IS_SERVER_NETWORK_VALID=$($SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID --address $SERVER_NETWORK);
-	check_success;
-fi
-
-if [ -n $CLIENT_ADDRESS ] && [ -n $CLIENT_NETWORK ]; then
-	echo "$0: packet destination is ambiguous: you cannot supply both a client address and network.">&2;
-	exit 2;
-fi
-
-if [ -n $REQUESTED_ADDRESS ]; then
+if [ -n "$REQUESTED_ADDRESS" ]; then
 	IS_REQUESTED_ADDRESS_VALID=$($SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address $REQUESTED_ADDRESS);
-	check_success;
+	confirm_exit_code_is_zero;
 fi
 
-if [ -n $REQUESTED_NETWORK ]; then
-	IS_REQUESTED_NETWORK_VALID=$($SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID --address $REQUESTED_NETWORK);
-	check_success;
+if [ -n "$CLIENT_MAC_ADDRESS" ]; then
+	IS_CLIENT_MAC_ADDRESS_VALID=$($SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID --address $CLIENT_MAC_ADDRESS);
+	confirm_exit_code_is_zero;
 fi
 
-if [ -n $SERVICE_USER_ID ]; then
+if [ -n "$SERVICE_USER_ID" ]; then
 	IS_SERVICE_USER_ID_VALID=$($SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID --id $SERVICE_USER_ID);
-	check_success;
+	confirm_exit_code_is_zero;
 fi
 
-echo "\t\tudp length < 1500 \\";
+echo "\t#DHCP ACK message length is most likely to be 2304 bytes, or 288 octets"
+echo "\t\tudp length 2304 \\";
 
-if [ -n $SERVICE_USER_ID ]; then
+echo "\t#Socket User ID - the program sending or receiving this packet type"
+if [ -n "$SERVICE_USER_ID" ]; then
 	echo "\t\tmeta skuid $SERVICE_USER_ID \\";
 else
 	echo "\t\t#meta skuid unknown - please consider the security implications";
 fi
 
-echo "\t\tDHCP OP Code of 2 (BOOTREPLY)";
+echo "\t#DHCP OP Code of 2 (BOOTREPLY)";
 echo "\t\t@ih,0,8 0x02 \\";
 
-echo "\t\t#HTYPE (Hardware Address Type) (1 Ethernet)";
+echo "\t#HTYPE (Hardware Address Type) (1 Ethernet)";
 echo "\t\t@ih,8,8 1 \\";
 
-echo "\t\t#HLEN (Hardware Address Length) (6 Segment MAC)";
+echo "\t#HLEN (Hardware Address Length) (6 Segment MAC)";
 echo "\t\t@ih,16,8 6 \\";
 
-echo "\t\t#HOPS (Client sets to 0, optionally set by relay-agents)";
+echo "\t#HOPS (Client sets to 0, optionally set by relay-agents)";
 echo "\t\t@ih,24,8 0 \\";
 
-echo "\t\t#XID (Transaction ID, random number chosen by client; to associate client and server requests/responses)";
+echo "\t#XID (Transaction ID) client generated random number to associate communications";
 echo "\t\t@ih,32,32 != 0 \\";
 
-echo "\t\t#SECS (Seconds since the request was made)";
-echo "\t\t#@ih,64,16 \\";
+echo "\t#SECS (Seconds since the request was made)";
+echo "\t\t@ih,64,16 0 \\";
 
-echo "\t\t#Flags";
-echo "\t\t#The broadcast bit";
-echo "\t\t@ih,80,1 0 \\";
+echo "\t#Flags: no flags for DHCP ACK, 16 zeroes, DHCPACK is not broadcasted (See RFC1541)";
+echo "\t\t@ih,80,16 0 \\\\";
 
-echo "\t\t#, followed by 15 zeroes. These must be zeroes as they are reserved for future use.":
-echo "\t\t#These bits are ignored by servers and relay agents.";
-echo "\t\t@ih,81,15 0 \\";
+echo "\t#CIADDR (Client IP Address)";
+if [ -n "$REQUESTED_ADDRESS" ]; then
+	echo "\t\t@ih,96,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 1) \\";
+	echo "\t\t@ih,104,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 2) \\";
+	echo "\t\t@ih,112,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 3) \\";
+	echo "\t\t@ih,120,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 4) \\";
+else
+	echo "\t\t#@ih,96,32 unrestricted - please consider the security implications";
+fi
 
-echo "\t\t#CIADDR (Client IP Address)";
-echo "\t\t#Filled in by client in DHCPREQUEST if verifying previously allocated configuration parameters.";
-echo "\t\t@ih,96,32 0 \\";
+if [ -n "$REQUESTED_ADDRESS" ]; then
+	echo "\t#YIADDR (Your IP address) Your (client) IP address";
+	echo "\t\t@ih,128,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 1) \\";
+	echo "\t\t@ih,136,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 2) \\";
+	echo "\t\t@ih,144,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 3) \\";
+	echo "\t\t@ih,152,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 4) \\";
+else
+	echo "\t\t#@ih,128,32 unrestricted - please consider the security implications";
+fi
 
-echo "\t\t#YIADDR (Your IP address) Your (client) IP address";
-echo "\t\t@ih,128,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 1) \\";
-echo "\t\t@ih,136,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 2) \\";
-echo "\t\t@ih,144,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 3) \\";
-echo "\t\t@ih,152,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 4) \\";
+echo "\t#SIADDR (Server IP address) Returned in DHCPOFFER, DHCPACK, DHCPNAK";
+if [ -n "$SERVER_ADDRESS" ]; then
+	echo "\t\t@ih,160,8 $(echo $SERVER_ADDRESS | cut -d '.' -f 1) \\";
+	echo "\t\t@ih,168,8 $(echo $SERVER_ADDRESS | cut -d '.' -f 2) \\";
+	echo "\t\t@ih,176,8 $(echo $SERVER_ADDRESS | cut -d '.' -f 3) \\";
+	echo "\t\t@ih,184,8 $(echo $SERVER_ADDRESS | cut -d '.' -f 4) \\";
+else
+	echo "\t\t#@ih,160,32 unrestricted - please consider the security implications";
+fi
 
-echo "\t\t#SIADDR (Server IP address) Returned in DHCPOFFER, DHCPACK, DHCPNAK";
-echo "\t\t@ih,160,8 $(echo $SERVER_ADDRESS | cut -d '.' -f 1) \\";
-echo "\t\t@ih,168,8 $(echo $SERVER_ADDRESS | cut -d '.' -f 2) \\";
-echo "\t\t@ih,176,8 $(echo $SERVER_ADDRESS | cut -d '.' -f 3) \\";
-echo "\t\t@ih,184,8 $(echo $SERVER_ADDRESS | cut -d '.' -f 4) \\";
-
-echo "\t\t#GIADDR (Relay Agent IP address)";
+echo "\t#GIADDR (Relay Agent IP address)";
 echo "\t\t@ih,192,32 0 \\";
 
-echo "\t\t#CHADDR (Client Hardware Address)";
-echo "\t\t#In the case of ethernet, zero. Can be used for things such as Bluetooth.";
-echo "\t\t#@ih,224,64 0 \\";
+echo "\t#CHADDR (Client Hardware Address)";
+#echo "\t\t@ih,224,64 0 \\";
+echo "\t#Confirm each segment of the MAC address matches";
+if [ -n "$CLIENT_MAC_ADDRESS" ]; then
+	echo "\t\t@ih,224,8 0x$(echo $CLIENT_MAC_ADDRESS | cut -d ':' -f 1) \\\\";
+	echo "\t\t@ih,232,8 0x$(echo $CLIENT_MAC_ADDRESS | cut -d ':' -f 2) \\\\";
+	echo "\t\t@ih,240,8 0x$(echo $CLIENT_MAC_ADDRESS | cut -d ':' -f 3) \\\\";
+	echo "\t\t@ih,248,8 0x$(echo $CLIENT_MAC_ADDRESS | cut -d ':' -f 4) \\\\";
+	echo "\t\t@ih,256,8 0x$(echo $CLIENT_MAC_ADDRESS | cut -d ':' -f 5) \\\\";
+	echo "\t\t@ih,264,8 0x$(echo $CLIENT_MAC_ADDRESS | cut -d ':' -f 6) \\\\";
+else
+	echo "\t\t#@ih,224,64 unrestricted - please consider the security implications"
+fi
 
-echo "\t\t#SNAME (Server name) optional server host name, null terminated string.";
-echo "\t\t@ih,288,512 0 \\";
-
-echo "\t\t#File (Boot file name), null terminated string.";
-echo "\t\t#\"generic\" name, or null in DHCPDISCOVER";
-echo "\t\t#Fully-qualified name in DHCPOFFER";
-echo "\t\t#@ih,800,1024 0 \\";
-
-echo "\t\t#DHCP Message Type of 5 (Acknowledge)";
+echo "\t#DHCP Message Type of 5 (Acknowledge)";
+echo "\t#Cannot confirm - DHCP message format is not strictly ordered"
 
 exit 0;
+if [ -z "$ENV_SETUP_NFT" ]; then printf "Set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.">&2; exit 4; fi
