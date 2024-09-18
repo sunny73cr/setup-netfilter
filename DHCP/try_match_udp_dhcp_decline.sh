@@ -1,20 +1,20 @@
 #!/bin/sh
 
-SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID="./SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
+if [ -z "$ENV_SETUP_NFT" ]; then printf "Set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.">&2; exit 4; fi
+
+SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
+SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_is_valid.sh";
+SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_service_id_is_valid.sh";
 
 if [ ! -x $SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID ]; then
 	echo "$0: script dependency failure: $SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID is missing or is not executable.">&2;
 	exit 3;
 fi
 
-SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID="./SCRIPT_HELPERS/check_mac_address_is_valid.sh";
-
 if [ ! -x $SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID ]; then
 	echo "$0: script dependency failure: $SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID is missing or is not executable.">&2;
 	exit 3;
 fi
-
-SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID="./SCRIPT_HELPERS/check_service_id_is_valid.sh";
 
 if [ ! -x $SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID ]; then
 	echo "$0: script dependency failure: $SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID is missing or is not executable.">&2;
@@ -48,7 +48,7 @@ if [ "$1" = "" ]; then print_usage_and_exit; fi
 
 confirm_exit_code_is_zero() {
 	if [ "$?" -ne 0 ]; then
-		echo "$0: cannot try to match udp dhcp server ackowledgement">&2;
+		echo "$0: cannot try to match udp dhcp client declining an offer">&2;
 		exit 2;
 	fi
 }
