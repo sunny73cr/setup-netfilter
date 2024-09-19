@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ -z "$ENV_SETUP_NFT" ]; then printf "Set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.">&2; exit 4; fi
+if [ -z "$ENV_SETUP_NFT" ]; then printf "setup-netfilter: Set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.">&2; exit 4; fi
 
 SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_is_valid.sh";
 SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
@@ -37,6 +37,10 @@ print_usage_and_exit() {
 	echo "Note: this relates to an entry in the /etc/passwd file. It is the user id of a designated DHCP client or server program.">&2;
 	echo "Note: without this restriction, DHCP ACK packets are permitted to any program."
 	echo "">&2;
+	echo "Developer / Special Use Flags:">&2;
+	echo "--only-validate">&2;
+	echo "Don't print the generated output / exit after validating inputs.">&2
+	echo "">&2;
 	exit 2;
 }
 
@@ -46,6 +50,8 @@ CLIENT_MAC_ADDRESS="";
 IS_REUSING_IP_ADDRESS=0;
 CLIENT_IPV4_ADDRESS="";
 SERVICE_USER_ID="";
+
+ONLY_VALIDATE=0;
 
 while true; do
 	case $1 in
@@ -63,13 +69,8 @@ while true; do
 			fi
 		;;
 		--is-reusing-ipv4-address)
-			if [ $# -lt 1 ]; then
-				#not enough argyments
-				print_usage_and_exit;
-			else
-				IS_REUSING_IP_ADDRESS=1;
-				shift 1;
-			fi
+			IS_REUSING_IP_ADDRESS=1;
+			shift 1;
 		;;
 		--client-ipv4-address)
 			if [ $# -lt 2 ]; then
@@ -95,9 +96,12 @@ while true; do
 				shift 2;
 			fi
 		;;
-		"") break; ;;
-		*) printf "Unrecognised argument - ">&2; print_usage_then_exit;
+		--only-validate)
+			ONLY_VALIDATE=1;
+			shift 1;
 		;;
+		"") break; ;;
+		*) printf "Unrecognised argument - ">&2; print_usage_then_exit; ;;
 	esac
 done
 
@@ -106,7 +110,7 @@ if [ -n "$CLIENT_MAC_ADDRESS" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the client mac address is invalid.\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
@@ -131,7 +135,7 @@ if [ -n "$CLIENT_IPV4_ADDRESS" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the client mac address is invalid.\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
@@ -140,7 +144,7 @@ if [ -n "$SERVICE_USER_ID" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the service user id is invalid. (confirm the /etc/passwd entry)\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
