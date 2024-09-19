@@ -146,8 +146,10 @@ if [ -n "$SERVICE_USER_ID" ]; then
 	esac
 fi
 
-echo "\t#DHCP DECLINE message length is most likely to be 2304 bytes, or 288 octets"
-echo "\t\tudp length 2304 \\";
+echo "\t#DHCP message length is a minimum of 2000 bits, packet length should be greater than 250 bytes."
+echo "\t#Packet length should not be longer than 512 bytes to avoid fragmentation; DHCP messages should be delivered in a single transmission."
+echo "\t\tudp length > 250 \\";
+echo "\t\tudp length < 512 \\";
 
 echo "\t#Socket User ID - the program sending or receiving this packet type"
 if [ -n "$SERVICE_USER_ID" ]; then
@@ -211,6 +213,11 @@ if [ -n "$CLIENT_MAC_ADDRESS" ]; then
 else
 	echo "\t\t#@ih,224,64 unrestricted - please consider the security implications"
 fi
+
+echo "\t#CHADDR Padding - pad to the full 128 bits - 48 consumed; 80 bits of padding";
+echo "\t\t@ih,272,80 0 \\";
+
+echo "\t#Cannot verify beyond the CHADDR as the server host name and boot file name fields may be used for options.";
 
 echo "\t#DHCP Message Type of 4 (Decline)";
 echo "\t#Cannot confirm - DHCP message format is not strictly ordered"
