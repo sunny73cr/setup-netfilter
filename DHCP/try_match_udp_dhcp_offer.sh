@@ -31,6 +31,10 @@ print_usage_and_exit() {
 	echo "Note: this relates to an entry in the /etc/passwd file. It is the user id of a designated DHCP client or server program.">&2;
 	echo "Note: without this restriction, DHCP ACK packets are permitted to any program."
 	echo "">&2;
+	echo "Developer / Special use flags">&2;
+	echo "--only-validate">&2;
+	echo "Skip output / exit after performing validation">&2;
+	echo "">&2;
 	exit 2;
 }
 
@@ -40,6 +44,8 @@ SERVER_IPV4_ADDRESS="";
 CLIENT_MAC_ADDRESS="";
 OFFERED_IPV4_ADDRESS="";
 SERVICE_USER_ID="";
+
+ONLY_VALIDATE=0;
 
 while true; do
 	case $1 in
@@ -95,6 +101,10 @@ while true; do
 			fi
 
 		;;
+		--only-validate)
+			ONLY_VALIDATE=1;
+			shift 1;
+		;;
 		"") break; ;;
 		*) printf "Unrecognised argument - ">&2; print_usage_then_exit;
 		;;
@@ -106,7 +116,7 @@ if [ -n "$SERVER_IPV4_ADDRESS" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the client mac address is invalid.\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
@@ -115,7 +125,7 @@ if [ -n "$CLIENT_MAC_ADDRESS" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the client mac address is invalid.\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
@@ -124,7 +134,7 @@ if [ -n "$OFFERED_IPV4_ADDRESS" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the client mac address is invalid.\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
@@ -133,9 +143,11 @@ if [ -n "$SERVICE_USER_ID" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the service user id is invalid. (confirm the /etc/passwd entry)\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
+
+if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
 echo "\t#DHCP message length is a minimum of 2000 bits, packet length should be greater than 250 bytes.";
 echo "\t#Packet length should not be longer than 512 bytes to avoid fragmentation; DHCP messages should be delivered in a single transmission."
@@ -178,18 +190,10 @@ echo "\t#CIADDR (Client IP Address)";
 echo "\t\t@ih,96,32 0";
 
 echo "\t#YIADDR (Your IP address) Your (client) IP address";
-#echo "\t\t@ih,128,32 0 \\";
-echo "\t\t@ih,128,8 $(echo $OFFERED_IPV4_ADDRESS | cut -d '.' -f 1) \\\\";
-echo "\t\t@ih,136,8 $(echo $OFFERED_IPV4_ADDRESS | cut -d '.' -f 2) \\\\";
-echo "\t\t@ih,144,8 $(echo $OFFERED_IPV4_ADDRESS | cut -d '.' -f 3) \\\\";
-echo "\t\t@ih,182,8 $(echo $OFFERED_IPV4_ADDRESS | cut -d '.' -f 4) \\\\";
+echo "\t\t@ih,128,32 0 \\";
 
 echo "\t#SIADDR (Server IP address) Returned in DHCPOFFER, DHCPACK, DHCPNAK";
-#echo "\t\t@ih,160,32 0 \\";
-echo "\t\t@ih,160,8 $(echo $SERVER_IPV4_ADDRESS | cut -d '.' -f 1) \\\\";
-echo "\t\t@ih,168,8 $(echo $SERVER_IPV4_ADDRESS | cut -d '.' -f 2) \\\\";
-echo "\t\t@ih,176,8 $(echo $SERVER_IPV4_ADDRESS | cut -d '.' -f 3) \\\\";
-echo "\t\t@ih,184,8 $(echo $SERVER_IPV4_ADDRESS | cut -d '.' -f 4) \\\\";
+echo "\t\t@ih,160,32 0 \\";
 
 echo "\t#GIADDR (Relay Agent IP address)";
 echo "\t\t@ih,192,32 0 \\";
