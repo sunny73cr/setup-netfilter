@@ -34,6 +34,10 @@ print_usage_and_exit() {
 	echo "Note: this relates to an entry in the /etc/passwd file. It is the user id of a designated DHCP client or server program.">&2;
 	echo "Note: without this restriction, DHCPRELEASE packets are permitted to any program."
 	echo "">&2;
+	echo "Developer / Special use flags">&2;
+	echo "--only-validate">&2;
+	echo "Skip output / exit after performing validation">&2;
+	echo "">&2;
 	exit 2;
 }
 
@@ -42,6 +46,8 @@ if [ "$1" = "" ]; then print_usage_and_exit; fi
 RELEASED_IPV4_ADDRESS="";
 CLIENT_MAC_ADDRESS="";
 SERVICE_USER_ID="";
+
+ONLY_VALIDATION=0;
 
 while true; do
 	case $1 in
@@ -83,6 +89,10 @@ while true; do
 				shift 2;
 			fi
 		;;
+		--only-validation)
+			ONLY_VALIDATION=1;
+			shift 1;
+		;;
 		"") break; ;;
 		*) printf "Unrecognised argument - ">&2; print_usage_then_exit;
 		;;
@@ -94,7 +104,7 @@ if [ -n "$CLIENT_MAC_ADDRESS" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the client mac address is invalid.\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
@@ -103,7 +113,7 @@ if [ -n "$RELEASED_IPV4_ADDRESS" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the released ip address is invalid.\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
@@ -112,9 +122,11 @@ if [ -n "$SERVICE_USER_ID" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the service user id is invalid. (confirm the /etc/passwd entry)\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
+
+if [ $ONLY_VALIDATION -eq 1 ]; then exit 0; fi
 
 echo "\t#DHCP message length is a minimum of 2000 bits, packet length should be greater than 250 bytes."
 echo "\t#Packet length should not be longer than 512 bytes to avoid fragmentation; DHCP messages should be delivered in a single transmission."
