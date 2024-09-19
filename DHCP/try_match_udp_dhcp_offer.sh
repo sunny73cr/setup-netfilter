@@ -190,10 +190,18 @@ echo "\t#CIADDR (Client IP Address)";
 echo "\t\t@ih,96,32 0";
 
 echo "\t#YIADDR (Your IP address) Your (client) IP address";
-echo "\t\t@ih,128,32 0 \\";
+#echo "\t\t@ih,128,32 0 \\";
+echo "\t\t@ih,128,8 $(echo $OFFERED_IPV4_ADDRESS | cut -d '.' -f 1) \\";
+echo "\t\t@ih,136,8 $(echo $OFFERED_IPV4_ADDRESS | cut -d '.' -f 1) \\";
+echo "\t\t@ih,144,8 $(echo $OFFERED_IPV4_ADDRESS | cut -d '.' -f 1) \\";
+echo "\t\t@ih,152,8 $(echo $OFFERED_IPV4_ADDRESS | cut -d '.' -f 1) \\";
 
 echo "\t#SIADDR (Server IP address) Returned in DHCPOFFER, DHCPACK, DHCPNAK";
-echo "\t\t@ih,160,32 0 \\";
+#echo "\t\t@ih,160,32 0 \\";
+echo "\t\t@ih,160,8 $(echo $SERVER_IPV4_ADDRESS | cut -d '.' -f 1) \\";
+echo "\t\t@ih,168,8 $(echo $SERVER_IPV4_ADDRESS | cut -d '.' -f 1) \\";
+echo "\t\t@ih,176,8 $(echo $SERVER_IPV4_ADDRESS | cut -d '.' -f 1) \\";
+echo "\t\t@ih,184,8 $(echo $SERVER_IPV4_ADDRESS | cut -d '.' -f 1) \\";
 
 echo "\t#GIADDR (Relay Agent IP address)";
 echo "\t\t@ih,192,32 0 \\";
