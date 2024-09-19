@@ -82,7 +82,7 @@ if [ -n "$CLIENT_MAC_ADDRESS" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the client mac address is invalid.\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
@@ -91,7 +91,7 @@ if [ -n "$SERVICE_USER_ID" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the service user id is invalid. (confirm the /etc/passwd entry)\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
