@@ -25,6 +25,10 @@ print_usage_and_exit() {
 	echo "Note: this relates to an entry in the /etc/passwd file. It is the user id of a designated DHCP client or server program.">&2;
 	echo "Note: without this restriction, DHCP ACK packets are permitted to any program."
 	echo "">&2;
+	echo "Developer / Special use flags:">&2;
+	echo "--only-validate">&2;
+	echo "Skip output / exit after validating inputs.">&2;
+	echo "">&2;
 	exit 2;
 }
 
@@ -32,6 +36,8 @@ if [ "$1" = "" ]; then print_usage_and_exit; fi
 
 CLIENT_MAC_ADDRESS="";
 SERVICE_USER_ID="";
+
+ONLY_VALIDATE=0;
 
 while true; do
 	case $1 in
@@ -61,6 +67,10 @@ while true; do
 			fi
 
 		;;
+		--only-validate)
+			ONLY_VALIDATE=1;
+			shift 1;
+		;;
 		"") break; ;;
 		*) printf "Unrecognised argument - ">&2; print_usage_then_exit;
 		;;
@@ -84,6 +94,8 @@ if [ -n "$SERVICE_USER_ID" ]; then
 		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\" produced an error.\n"; exit 3 ;;
 	esac
 fi
+
+if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
 echo "\t#DHCP message length is a minimum of 2000 bits, packet length should be greater than 250 bytes.";
 echo "\t#Packet length should not be longer than 512 bytes to avoid fragmentation; DHCP messages should be delivered in a single transmission."
