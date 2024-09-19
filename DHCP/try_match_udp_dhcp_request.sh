@@ -148,6 +148,8 @@ if [ -n "$SERVICE_USER_ID" ]; then
 	esac
 fi
 
+if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
+
 echo "\t#DHCP message length is a minimum of 2000 bits, packet length should be greater than 250 bytes.";
 echo "\t#Packet length should not be longer than 512 bytes to avoid fragmentation; DHCP messages should be delivered in a single transmission."
 echo "\t\tudp length > 250 \\";

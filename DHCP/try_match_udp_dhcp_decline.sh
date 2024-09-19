@@ -41,6 +41,10 @@ print_usage_and_exit() {
 	echo "Note: this relates to an entry in the /etc/passwd file. It is the user id of a designated DHCP client or server program.">&2;
 	echo "Note: without this restriction, DHCP ACK packets are permitted to any program."
 	echo "">&2;
+	echo "Developer / Special use flags:">&2;
+	echo "--only-validate">&2;
+	echo "Don't print the generated output / exit after validating inputs.">&2;
+	echo "">&2;
 	exit 2;
 }
 
@@ -115,7 +119,7 @@ if [ -n "$SERVER_ADDRESS" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the server ip address is invalid.\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
@@ -124,7 +128,7 @@ if [ -n "$REQUESTED_ADDRESS" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the requested ip address is invalid.\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
@@ -133,7 +137,7 @@ if [ -n "$CLIENT_MAC_ADDRESS" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the client mac address is invalid.\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
 
@@ -142,9 +146,11 @@ if [ -n "$SERVICE_USER_ID" ]; then
 	case $? in
 		0) ;;
 		1) printf "$0: the service user id is invalid. (confirm the /etc/passwd entry)\n"; exit 2; ;;
-		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\" produced an error.\n"; exit 3 ;;
+		*) printf "$0: script dependency failure: \"$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\" produced a failure exit code.\n"; exit 3 ;;
 	esac
 fi
+
+if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
 echo "\t#DHCP message length is a minimum of 2000 bits, packet length should be greater than 250 bytes."
 echo "\t#Packet length should not be longer than 512 bytes to avoid fragmentation; DHCP messages should be delivered in a single transmission."
@@ -181,15 +187,8 @@ echo "\t#Flags: no flags for DHCP DECLINE, 16 zeroes, DHCPDECLINE is not broadca
 echo "\t\t@ih,80,16 0 \\";
 
 echo "\t#CIADDR (Client IP Address)";
-echo "\t#In this case, the address being declined.";
-if [ -n "$REQUESTED_ADDRESS" ]; then
-	echo "\t\t@ih,96,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 1) \\";
-	echo "\t\t@ih,104,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 2) \\";
-	echo "\t\t@ih,112,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 3) \\";
-	echo "\t\t@ih,120,8 $(echo $REQUESTED_ADDRESS | cut -d '.' -f 4) \\";
-else
-	echo "\t\t#@ih,96,32 unrestricted - please consider the security implications";
-fi
+echo "\t#DHCPDECLINE does not require a client IP address";
+echo "\t\t@ih,96,32 0";
 
 echo "\t#YIADDR (Your IP address) Your (client) IP address";
 echo "\t\t@ih,128,32 0 \\";
