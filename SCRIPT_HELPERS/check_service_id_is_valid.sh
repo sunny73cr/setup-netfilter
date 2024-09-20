@@ -1,7 +1,7 @@
 #!/bin/sh
 
 print_usage_and_exit () {
-	echo "Usage: $0 --service-user-id <number>">&2;
+	echo "Usage: $0 --service-user-id 0-65535">&2;
 	exit 2;
 }
 
@@ -14,7 +14,7 @@ while true; do
 		--service-user-id)
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
-			elif [ "$2" = "" ] || [ "$(echo $2 | grep -E '^-')" != "" ]; then
+			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
 				SERVICE_USER_ID=$2;
@@ -32,16 +32,11 @@ if [ -z "$SERVICE_USER_ID" ]; then
 fi
 
 if [ "$(echo $SERVICE_USER_ID | grep -E '^[0-9]{1,5}$')" = "" ]; then
-	printf "$0; the service user id must be a number between 1 and 65535\n">&2;
+	printf "$0; the service user id must be a number between 0 and 65535\n">&2;
 	exit 1;
 fi
 
-if [ "$SERVICE_USER_ID" -eq 0 ]; then
-	printf "$0; the service user id must not be zero.\n">&2;
-	exit 1;
-fi
-
-if [ -z "$(cat /etc/passwd | grep -E [\-_a-zA-Z]{1,32}:x:$SERVICE_USER_ID)" ]; then
+if [ -z "$(cat /etc/passwd | grep -E "^[\-_a-zA-Z]{1,32}:x:$SERVICE_USER_ID")" ]; then
 	printf "$0: the service user id was not found in /etc/passwd\n">&2;
 	exit 1;
 else
