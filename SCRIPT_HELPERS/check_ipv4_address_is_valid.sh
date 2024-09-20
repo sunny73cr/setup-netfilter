@@ -1,7 +1,7 @@
 #!/bin/sh
 
 print_usage_then_exit () {
-	echo "Usage: $0 --address <string>">&2;
+	printf "Usage: $0 --address <string>\n">&2;
 	exit 2;
 }
 
@@ -27,29 +27,41 @@ while true; do
 done
 
 if [ -z "$ADDRESS" ]; then
-	echo "$0; you must provide an IPV4 address in the form of X.X.X.X (where X is 0-255)">&2;
+	printf "$0; you must provide an IPV4 address in the form of X.X.X.X (where X is 0-255)\n">&2;
 	exit 1;
 fi
 
 if [ -z $(echo "$ADDRESS" | grep -P '^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$') ]; then
-	echo "$0; the address does not match the form (X.X.X.X, where X is 0-999).">&2;
+	printf "$0; the address does not match the form (X.X.X.X, where X is 0-999).\n">&2;
 	exit 1;
 fi
 
 FIRST_OCTET=$(echo "$ADDRESS" | cut -d '.' -f 1);
 
-if [ "$FIRST_OCTET" -gt 255 ]; then exit 1; fi
+if [ "$FIRST_OCTET" -gt 255 ]; then
+	printf "$0: first octet is too high.\n">&2;
+	exit 1;
+fi
 
 SECOND_OCTET=$(echo "$ADDRESS" | cut -d '.' -f 2);
 
-if [ "$SECOND_OCTET" -gt 255 ]; then exit 1; fi
+if [ "$SECOND_OCTET" -gt 255 ]; then
+	printf "$0: second octet is too high.\n">&2;
+	exit 1;
+fi
 
 THIRD_OCTET=$(echo "$ADDRESS" | cut -d '.' -f 3);
 
-if [ "$THIRD_OCTET" -gt 255 ]; then exit 1; fi
+if [ "$THIRD_OCTET" -gt 255 ]; then
+	printf "$0: third octet is too high.\n">&2;
+	exit 1;
+fi
 
 FOURTH_OCTET=$(echo "$ADDRESS" | cut -d '.' -f 4);
 
-if [ "$FOURTH_OCTET" -gt 255 ]; then exit 1; fi
+if [ "$FOURTH_OCTET" -gt 255 ]; then
+	printf "$0: fourth octet is too high.\n">&2;
+	exit 1;
+fi
 
 exit 0;
