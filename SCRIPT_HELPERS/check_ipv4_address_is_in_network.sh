@@ -1,106 +1,145 @@
 #!/bin/sh
 
-DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID="./SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
+if [ -z "$ENV_SETUP_NFT" ]; then printf "Set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.">&2; exit 4; fi
 
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID" ]; then
+DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
+DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_network_is_valid.sh";
+DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY="$ENV_SETUP_NFT/SCRIPT_HELPERS/convert_ipv4_address_to_binary.sh";
+DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/convert_cidr_network_to_base_address.sh";
+DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/convert_cidr_network_to_end_address.sh";
+
+if [ ! -x $DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID ]; then
 	echo "$0; dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" is missing or is not executable.">&2;
 	exit 3;
 fi
 
-DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID="./SCRIPT_HELPERS/check_ipv4_network_is_valid.sh";
-
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID" ]; then
+if [ ! -x $DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID ]; then
 	echo "$0; dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID\" is missing or is not executable.">&2;
 	exit 3;
 fi
 
-DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY="./SCRIPT_HELPERS/convert_ipv4_address_to_binary.sh";
-
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY" ]; then
+if [ ! -x $DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY ]; then
 	echo "$0; dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY\" is missing or is not executable.">&2;
 	exit 3;
 fi
 
-DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS="./SCRIPT_HELPERS/convert_cidr_network_to_base_address.sh";
-
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS" ]; then
+if [ ! -x $DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS ]; then
 	echo "$0; dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\" is missing or is not executable.">&2;
 	exit 3;
 fi
 
-DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS="./SCRIPT_HELPERS/convert_cidr_network_to_end_address.sh";
-
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS" ]; then
+if [ ! -x $DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS ]; then
 	echo "$0; dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS\" is missing or is not executable.">&2;
 	exit 3;
 fi
 
-check_success () {
-	if [ "$?" -ne 0 ]; then
-		echo "$0; cannot confirm is the address is within the network.">&2;
-		exit 3;
-	fi
-}
-
-usage () {
-	echo "Usage: $0 --address <X.X.X.X> --network <X.X.X.X/X>">&2;
+print_usage_then_exit () {
+	echo "Usage: $0 <arguments>">&2;
+	echo "--address X.X.X.X (where X is 0-255)">&2;
+	echo "--network X.X.X.X/Y (where X is 0-255, and Y is 1-32)">&2;
+	echo "">&2;
+	echo "Developer / special use options:">&2;
+	echo "--only-validate">&2;
+	echo "Skip output, and exit after validating parameters.">&2;
+	echo "">&2;
 	exit 2;
 }
 
-if [ "$1" = "" ]; then usage; else fi
+if [ "$1" = "" ]; then print_usage_then_exit; else fi
+
+ADDRESS="";
+NETWORK="";
+ONLY_VALIDATE=0;
 
 while true; do
 	case "$1" in
-		--address )
-			ADDRESS="$2";
-			#if not enough arguments
-			if [ "$#" -lt 2 ]; then usage; else shift 2; fi
+		--address)
+			#not enough arguments
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			#value is empty
+			if [ "$2" = "" ] || [ "$(echo $2 | grep -E '^-')" != "" ]; then
+				print_usage_then_exit;
+			else
+				ADDRESS=$2;
+				shift 2;
+			fi
 		;;
-		--network )
-			NETWORK="$2";
-			#if not enough arguments
-			if [ "$#" -lt 2 ]; then usage; else shift 2; fi
+		--network)
+			#not enough arguments
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			#value is empty
+			if [ "$2" = "" ] || [ "$(echo $2 | grep -E '^-')" != "" ]; then
+				print_usage_then_exit;
+			else
+				NETWORK=$2;
+				shift 2;
+			fi
 		;;
-		"" ) break; ;;
-		*)
-			echo "">&2;
-			echo "Unrecognised option: $1 $2">&2;
-			usage;
+		--only-validate)
+			ONLY_VALIDATE=1;
+			shift 1;
 		;;
+		"") break; ;;
+		*) printf "Unrecognised argument - ">&2; print_usage_then_exit; ;;
 	esac
 done
 
 if [ -z "$ADDRESS" ]; then
-	echo "$0; you must provide an ipv4 address (0.0.0.0)">&2;
+	echo "$0; you must provide an ipv4 address (X.X.X.X, where X is 0-255)">&2;
 	exit 2;
 fi
 
-IS_IPV4_ADDRESS_VALID=$($DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address "$ADDRESS");
-check_success;
+$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address "$ADDRESS"
+case $? in
+	0)
+	1) echo "$0: the ip address you supplied is invalid.">&2; exit 2; ;;
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+esac
+
+$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID --network "$NETWORK"
+case $? in
+	0)
+	1) echo "$0: the ip network you supplied is invalid.">&2; exit 2; ;;
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+esac
 
 ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY \
 --address "$ADDRESS" \
 --output-bit-order "little-endian");
-check_success;
-
-IS_IPV4_NETWORK_VALID=$($DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID --network "$NETWORK");
-check_success;
+case $? in
+	0)
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+esac
 
 CIDR_NETWORK_BASE_ADDRESS=$($DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS --network "$NETWORK");
-check_failure;
+case $? in
+	0)
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+esac
 
 CIDR_NETWORK_BASE_ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY \
 --address "$CIDR_NETWORK_BASE_ADDRESS" \
 --output-bit-order "little-endian");
-check_success;
+case $? in
+	0)
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+esac
 
 CIDR_NETWORK_END_ADDRESS=$($DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS --network "$NETWORK");
-check_success;
+case $? in
+	0)
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+esac
 
 CIDR_NETWORK_END_ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY \
 --address "$CIDR_NETWORK_END_ADDRESS" \
 --output-bit-order "little-endian");
-check_success;
+case $? in
+	0)
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+esac
 
 #
 # Using lexicographical comparison helps to avoid converting the addresses to decimal.
@@ -110,7 +149,7 @@ if \
 [ "$ADDRESS_BINARY" \< "$CIDR_NETWORK_BASE_ADDRESS_BINARY" ] || \
 [ "$ADDRESS_BINARY" \> "$CIDR_NETWORK_END_ADDRESS_BINARY" ]; then
 	echo "$0; the address is not contained within the network.">&2;
-	exit 2;
+	exit 1;
 else
 	exit 0;
 fi
