@@ -3,7 +3,7 @@
 #Source: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
 
 print_usage_then_exit () {
-	echo "Usage: $0 --id <number>">&2;
+	printf "Usage: $0 --id <number>\n">&2;
 	exit 2;
 }
 
@@ -12,11 +12,11 @@ ID="";
 if [ "$1" = "" ]; then print_usage_then_exit; fi
 
 while true; do
-	case "$1" in
+	case $1 in
 		--id )
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
-			elif [ "$2" = "" ] || [ "$(echo $2 | grep -E '^-')" != "" ]; then
+			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
 				ID=$2;
@@ -29,7 +29,7 @@ while true; do
 done
 
 if [ -z "$ID" ]; then
-	echo "$0; you must provide an id (--id number, where number is 0-255).">&2;
+	printf "$0; you must provide an id (--id number, where number is 0-255).\n">&2;
 	exit 2;
 fi
 
@@ -280,9 +280,8 @@ case "$ID" in
 	253 ) exit 1; ;; #Experimentation and testing
 	254 ) exit 1; ;; #Experimentation and testing
 	255 ) exit 1; ;; #Reserved
-	*)								#Unknown
-		echo "$0; the layer 4 protocol is unrecognised.">&2;
+	*)		 #Unknown
+		printf "$0; the layer 4 protocol is unrecognised.\n">&2;
 		exit 2;
 	;;
 esac
-if [ -z "$ENV_SETUP_NFT" ]; then printf "Set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.">&2; exit 4; fi
