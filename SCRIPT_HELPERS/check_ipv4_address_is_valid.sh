@@ -1,7 +1,8 @@
 #!/bin/sh
 
 print_usage_then_exit () {
-	printf "Usage: $0 --address <string>\n">&2;
+	printf "Usage: $0 <arguments>\n">&2;
+	printf "--address X.X.X.X (where X is 0-255)\n">&2;
 	exit 2;
 }
 
@@ -14,7 +15,7 @@ while true; do
 		--address)
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
-			elif [ "$2" = "" ] || [ "$(echo $2 | grep -E '^-')" != "" ]; then
+			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
 				ADDRESS=$2;
@@ -22,13 +23,13 @@ while true; do
 			fi
 		;;
 		"") break; ;;
-		*) printf "Unrecognised argument - ">&2; print_usage_then_exit; ;;
+		*) printf "Unrecognised argument $1. ">&2; print_usage_then_exit; ;;
 	esac
 done
 
 if [ -z "$ADDRESS" ]; then
-	printf "$0; you must provide an IPV4 address in the form of X.X.X.X (where X is 0-255)\n">&2;
-	exit 1;
+	printf "\nMissing --address. ">&2;
+	print_usage_then_exit;
 fi
 
 if [ -z $(echo "$ADDRESS" | grep -P '^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$') ]; then
