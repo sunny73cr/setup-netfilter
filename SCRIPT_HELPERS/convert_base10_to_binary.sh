@@ -1,21 +1,32 @@
 #!/bin/sh
 
-DEPENDENCY_SCRIPT_PATH_EXPONENT="./SCRIPT_HELPERS/exponent.sh";
+if [ -z "$ENV_SETUP_NFT" ]; then printf "Set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.\n">&2; exit 4; fi
 
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_EXPONENT" ]; then
-	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_EXPONENT\" is missing or is not executable.">&2;
+DEPENDENCY_SCRIPT_PATH_SUBSTRING="$ENV_SETUP_NFT/SCRIPT_HELPERS/substring.sh";
+
+if [ ! -x $DEPENDENCY_SCRIPT_PATH_SUBSTRING ]; then
+	printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_SUBSTRING\" is missing or is not executable.\n">&2;
 	exit 2;
 fi
 
-check_success () {
-	if [ "$?" -ne 0 ]; then
-		echo "$0; cannot convert base10 to binary">&2;
-		exit 3;
-	fi
-}
+DEPENDENCY_SCRIPT_PATH_EXPONENT="$ENV_SETUP_NFT/SCRIPT_HELPERS/exponent.sh";
 
-usage () {
-	echo "Usage: $0 --number <number> --output-bit-order <big-endian|little-endian> --output-bit-length <1-32>">&2;
+if [ ! -x $DEPENDENCY_SCRIPT_PATH_SUBSTRING ]; then
+	printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_EXPONENT\" is missing or is not executable.\n">&2;
+	exit 2;
+fi
+
+print_usage_then_exit () {
+	printf "Usage: $0 <arguments>\n">&2;
+	printf " --number 0 - 4,294,967,296; without delimiters)\n">&2;
+	printf "\n">&2;
+	printf " Optional: --output-bit-order 'big-endian' or 'little-endian' (no hyphens)\n">&2;
+	printf " Note: if omitted, output-bit-order defaults to 'little endian'\n">&2;
+	printf "\n">&2;
+	printf " Optional: --output-bit-length 1 to 32\n">&2;
+	printf " Note: if omitted, output-bit-length defaults to the smallest length required.\n">&2;
+	printf " Note: if the output-bit-length is greater than neccessary, the binary string is padded with zeroes.\n">&2;
+	printf "\n">&2;
 	exit 2;
 }
 
@@ -23,80 +34,124 @@ NUMBER="";
 BIT_ORDER="";
 BIT_LENGTH="";
 
-if [ "$1" = "" ]; then usage; fi
+ONLY_VALIDATE=0;
+SKIP_VALIDATE=0;
+NEWLINE_SUFFIX_OUTPUT=0;
+
+if [ "$1" = "" ]; then print_usage_then_exit; fi
 
 while true; do
 	case "$1" in
 		--number)
-			NUMBER="$2";
-			if [ "$#" -lt 2 ]; then usage; else shift 2; fi
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ "$2" = "" ]; then
+				print_usage_then_exit;
+			else
+				NUMBER=$2;
+				shift 2;
+			fi
 		;;
-		
 		--output-bit-order)
-			BIT_ORDER="$2";
-			if [ "$#" -lt 2 ]; then usage; else shift 2; fi
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ "$2" = "" ]; then
+				print_usage_then_exit;
+			else
+				BIT_ORDER=$2;
+				shift 2;
+			fi
 		;;
-		
 		--output-bit-length)
-			BIT_LENGTH="$2";
-			if [ "$#" -lt 2 ]; then usage; else shift 2; fi
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ "$2" = "" ]; then
+				print_usage_then_exit;
+			else
+				BIT_LENGTH=$2;
+				shift 2;
+			fi
+		;;
+		--newline-suffix-output)
+			NEWLINE_SUFFIX_OUTPUT=1;
+			shift 1;
+		;;
+		--only-validate)
+			ONLY_VALIDATE=1;
+			shift 1;
+		;;
+		--skip-validate)
+			SKIP_VALIDATE=1;
+			shift 1;
 		;;
 		"") break; ;;
-		*)
-			echo "">&2;
-			echo "Unrecognised option: $1 $2">&2;
-			usage;
-		;;
+		*) printf "Unrecognised argument - ">&2; print_usage_then_exit; ;;
 	esac
 done
 
-if [ -z "$NUMBER" ]; then
-	echo "$0; you must provide a number">&2;
-	exit 2;
+if [ $ONLY_VALIDATE -eq 1 ] && [ $SKIP_VALIDATE -eq 1 ]; then
+	#why?
+	exit 0;
 fi
 
-if [ -z "$BIT_ORDER" ]; then
-	echo "$0; you must provide a bit order.">&2;
-	exit 2;
-fi
+if [ $SKIP_VALIDATE -eq 0 ]; then
+	if [ -n "$BIT_LENGTH" ]; then
+		if [ "$(printf $BIT_LENGTH | grep -E '^[1-9][0-9]{0,1}$')" = "" ]; then
+			printf "$0; output bit length must be number from 1-32.\n">&2;
+			exit 2;
+		fi
 
-case "$BIT_ORDER" in
-	"big-endian") BIT_ORDER="BIG-ENDIAN"; ;;
-	"little-endian") BIT_ORDER="LITTLE-ENDIAN"; ;;
-	*)
-		echo "$0; unrecognised bit order (try '--output-bit-order big-endian' or '--output-bit-order little-endian' without quotes.)">&2;
+		if [ "$BIT_LENGTH" -eq 0 ]; then
+			printf "$0; bit length should not be zero.\n">&2;
+			exit 2;
+		fi
+
+		if [ "$BIT_LENGTH" -gt 32 ]; then
+			printf "$0; bit length cannot be greater than 32.\n">&2;
+			exit 2;
+		fi
+
+		BIT_LENGTH_CAPACITY=$($DEPENDENCY_SCRIPT_PATH_EXPONENT --base 2 --exponent $BIT_LENGTH);
+		case $? in
+			0) ;;
+			*) printf "script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_EXPONENT\" produced a failure exit code.\n">&2; exit 3; ;;
+		esac
+		BIT_LENGTH_CAPACITY_MINUS_ONE=$(($BIT_LENGTH_CAPACITY - 1));
+	fi
+
+	if [ "$(printf $NUMBER | grep -E '^[0-9]{1,10}$')" = "" ]; then
+		printf "$0: you must provide a base 10 (decimal) number smaller than uint32 max (4,294,967,296). The number cannot contain any delimiters.\n">&2;
 		exit 2;
-	;;
-esac
+	fi
 
-if [ -z "$BIT_LENGTH" ]; then
-	echo "$0; you must provide an output bit length (try '--output-bit-length 32' without quotes.)">&2;
-	exit 2;
+	if [ $NUMBER -gt 4294967296 ]; then
+		printf "$0: you must provide a base 10 (decimal) number smaller than uint32 max (4,294,967,296).\n">&2;
+		exit 2;
+	fi
+
+	if [ -n "$BIT_LENGTH" ]; then
+		if [ $NUMBER -gt $BIT_LENGTH_CAPACITY_MINUS_ONE ]; then
+			printf "$0: the number you provided is too large, the maximum number for the provided bit length is $BIT_LENGTH_CAPACITY_MINUS_ONE.\n">&2;
+			exit 2;
+		fi
+	fi
+
+	if [ -n "$BIT_ORDER" ]; then
+		case "$BIT_ORDER" in
+			"big-endian") BIT_ORDER=0; ;;
+			"little-endian") BIT_ORDER=1; ;;
+			*) printf "$0; unrecognised bit order (try 'big-endian' or 'little-endian' without quotes.)\n">&2; exit 2; ;;
+		esac
+	else
+		BIT_ORDER=1;
+	fi
 fi
 
-if [ "$BIT_LENGTH" -eq 0 ]; then
-	echo "$0; bit length should not be zero.">&2;
-	exit 2;
-fi
+if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
-if [ "$BIT_LENGTH" -gt 32 ]; then
-	echo "$0; bit length cannot be greater than 32.">&2;
-	exit 2;
-fi
-
-MAX_FOR_BIT_LENGTH=$($DEPENDENCY_SCRIPT_PATH_EXPONENT --base "2" --exponent $BIT_LENGTH);
-check_success
-
-MAX_FOR_BIT_LENGTH_MINUS_ONE=$((MAX_FOR_BIT_LENGTH-1));
-
-if [ "$NUMBER" -gt "$MAX_FOR_BIT_LENGTH_MINUS_ONE" ]; then
-	echo "The number exceeds the maximum value ($BIT_LENGTH bits = 0 to $MAX_FOR_BIT_LENGTH_MINUS_ONE)">&2;
-	exit 2;
-fi
-
-# RapidTables.come convert decimal to binary calculator:
+# RapidTables.com convert decimal to binary calculator:
 # https://www.rapidtables.com/convert/number/decimal-to-binary.html
-# 
+#
 # 1. Input divide 2 == the quotient
 # 2. Remainder of quotient modulus 2 == the binary digit
 # 3. Repeat until the quotient is equal to 0.
@@ -106,48 +161,54 @@ RESULT="";
 QUOTIENT="$NUMBER";
 
 while true; do
-	if [ $QUOTIENT -eq 0 ]; then
-		break;
+	if [ $QUOTIENT -eq 0 ]; then break; fi
+
+	if [ $BIT_ORDER -eq 0 ]; then
+		#big-endian
+		RESULT=$RESULT$(($QUOTIENT % 2));
+	else
+		#little-endian
+		RESULT=$(($QUOTIENT % 2))$RESULT;
 	fi
 
-	RESULT=$RESULT$(($QUOTIENT%2));
-	
-	QUOTIENT=$(($QUOTIENT/2));
+	QUOTIENT=$(($QUOTIENT / 2));
 done;
 
-#Zero pad binary output to 8 bits.
+if [ -n "$BIT_LENGTH" ]; then
+	#Zero pad binary output to desired bit length.
 
-BIT_LENGTH_MINUS_ONE=$(($BIT_LENGTH-1));
+	#BIT_LENGTH_MINUS_ONE=$(($BIT_LENGTH-1));
 
-ZERO_PAD_COUNT=$(( $BIT_LENGTH_MINUS_ONE - ${#RESULT} ));
+	ZERO_PAD_COUNT=$(( $BIT_LENGTH - ${#RESULT} ));
 
-ZERO="0";
+	ZERO_PAD="";
 
-while [ $ZERO_PAD_COUNT -ge 0 ]; do
-	ZERO_PAD=$ZERO_PAD$ZERO;
-	
-	ZERO_PAD_COUNT=$(( ZERO_PAD_COUNT - 1 ));
-done;
+	ZERO="0";
 
-#Output in desired byte order.
+	while true; do
+		if [ $ZERO_PAD_COUNT -eq 0 ]; then break; fi
 
-if [ "$BIT_ORDER" = "BIG-ENDIAN" ]; then
-	echo -n $RESULT;
-	echo -n $ZERO_PAD;
-	echo "";
-else
-	echo -n $ZERO_PAD;
-	
-	#iterate the binary string in reverse
-	#1-based index for awk compatibility
-	i=${#RESULT};
-	while [ $i -ge 1 ]; do
-		BIT=$(echo $RESULT | awk -v var=$i '{ string=substr($0, var, 1); print string; }' );
-		
-		echo -n $BIT;
-		
-		i=$(($i-1));
+		ZERO_PAD="$ZERO_PAD$ZERO";
+
+		ZERO_PAD_COUNT=$(( $ZERO_PAD_COUNT - 1 ));
 	done;
-	
-	echo "";
+
+	#Output in desired bit order.
+
+	if [ $BIT_ORDER -eq 0 ]; then
+		#big endian
+		printf "$RESULT$ZERO_PAD";
+	else
+		#little endian
+		printf "$ZERO_PAD$RESULT";
+	fi
+else
+	#no zero padding, already in desired order.
+	printf "$RESULT";
 fi
+
+if [ $NEWLINE_SUFFIX_OUTPUT -eq 1 ]; then
+	printf "\n";
+fi
+
+exit 0;
