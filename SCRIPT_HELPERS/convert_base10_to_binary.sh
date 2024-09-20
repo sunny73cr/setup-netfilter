@@ -27,6 +27,15 @@ print_usage_then_exit () {
 	printf " Note: if omitted, output-bit-length defaults to the smallest length required.\n">&2;
 	printf " Note: if the output-bit-length is greater than neccessary, the binary string is padded with zeroes.\n">&2;
 	printf "\n">&2;
+	printf " Optional: --newline-suffix-output\n">&2;
+	printf " Note: if enabled, append a newline character to the end of the output.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --only-validate\n">&2;
+	printf " Note: this causes the program to exit after performing validation.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --skip-validate\n">&2;
+	printf " Note: this causes the program to skip validation (if you know the inputs are correct.)\n">&2;
+	printf "\n">&2;
 	exit 2;
 }
 
