@@ -42,18 +42,18 @@ while true; do
 			shift 1;
 		;;
 		"") break; ;;
-		*) printf "Unrecognised argument - ">&2; print_usage_then_exit; ;;
+		*) printf "\nUnrecognised argument $1. ">&2; print_usage_then_exit; ;;
 	esac
 done
 
 if [ -z "$NUMBER" ]; then
-	printf "$0; you must provide a number.\n">&2;
-	exit 2;
+	printf "\nInvalid --number. ">&2;
+	print_usage_then_exit;
 fi
 
 if [ "$(echo "$NUMBER" | grep -E '[-]{0,1}[0-9]{1,64}')" = "" ]; then
-	printf "$0: you must provide a positive or negative number up to 64 digits in length (including 0).\n">&2;
-	exit 2;
+	printf "\nInvalid --number. ">&2;
+	print_usage_then_exit;
 fi
 
 if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi;
