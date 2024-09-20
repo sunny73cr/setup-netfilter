@@ -1,7 +1,9 @@
 #!/bin/sh
 
 print_usage_then_exit () {
-	printf "Usage: $0 --address XX:XX:XX:XX:XX:XX, where X is a-f, A-F, 0-9: hexadecimal.\n">&2;
+	printf "Usage: $0 <arguments>\n">&2
+	printf " --address XX:XX:XX:XX:XX:XX (where X is a-f, A-F, 0-9)\n">&2;
+	printf "\n">&2;
 	exit 2;
 }
 
@@ -22,13 +24,13 @@ while true; do
 			fi
 		;;
 		"") break; ;;
-		*) printf "Unrecognised argument - ">&2; print_usage_then_exit; ;;
+		*) printf "Unrecognised argument $1. ">&2; print_usage_then_exit; ;;
 	esac
 done
 
 if [ -z "$ADDRESS" ]; then
-	printf "$0; you must provide a MAC address (--address XX:XX:XX:XX:XX:XX, where X is a-f, or A-F, or 0-9: hexadecimal)\n">&2;
-	exit 2;
+	printf "\nMissing --address. ">&2;
+	print_usage_then_exit;
 fi
 
 REGEX='^[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}$';
