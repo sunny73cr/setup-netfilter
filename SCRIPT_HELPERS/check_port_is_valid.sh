@@ -1,10 +1,8 @@
 #!/bin/sh
 
 print_usage_then_exit () {
-	echo "">&2;
-	echo "Usage: $0 <arguments>">&2;
-	echo "--port <string>">&2;
-	echo "Optional: --port-label <string>">&2;
+	printf "Usage: $0 <arguments>\n">&2;
+	printf "--port 1-65535\n">&2;
 	exit 2;
 }
 
@@ -17,7 +15,7 @@ while true; do
 		--port)
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
-			elif [ "$2" = "" ] || [ "$(echo $2 | grep -E '^-')" != "" ]; then
+			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
 				PORT=$2;
@@ -36,7 +34,7 @@ fi
 
 if [ "$(echo "$PORT" | cut -d '-' -f 1)" = "$PORT" ]; then
 	#not a range
-	if [ -z "$(echo "$PORT" | grep -P '[0-9]{1,5}')" ]; then
+	if [ -z "$(echo "$PORT" | grep -E '^[0-9]{1,5}$')" ]; then
 		printf "$0: port is not a number.\n">&2;
 		exit 1;
 	fi
@@ -54,7 +52,7 @@ else
 	#a port range
 	PORT_RANGE_START=$(echo "$PORT" | cut -d '-' -f 1);
 
-	if [ -z "$(echo "$PORT_RANGE_START" | grep -P '[0-9]{1,5}')" ]; then
+	if [ -z "$(echo "$PORT_RANGE_START" | grep -E '^[0-9]{1,5}$')" ]; then
 		printf "$0: port range lower bound is not a number.\n">&2;
 		exit 1;
 	fi
@@ -71,7 +69,7 @@ else
 
 	PORT_RANGE_END=$(echo "$PORT" | cut -d '-' -f 2);
 
-	if [ -z "$(echo "$PORT_RANGE_END" | grep -P '[0-9]{1,5}')" ]; then
+	if [ -z "$(echo "$PORT_RANGE_END" | grep -E '^[0-9]{1,5}$')" ]; then
 		printf "$0: port range end is not a number.\n">&2;
 		exit 1;
 	fi
