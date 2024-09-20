@@ -3,7 +3,9 @@
 #Source: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
 
 print_usage_then_exit () {
-	printf "Usage: $0 --id <number>\n">&2;
+	printf "Usage: $0 <arguments>\n">&2
+	printf " --id <number>\n">&2;
+	printf "\n">&2
 	exit 2;
 }
 
@@ -24,13 +26,13 @@ while true; do
 			fi
 		;;
 		"") break; ;;
-		*) printf "Unrecognised argumemt - ">&2; print_usage_then_exit; ;;
+		*) printf "Unrecognised argumemt $1. ">&2; print_usage_then_exit; ;;
 	esac
 done
 
 if [ -z "$ID" ]; then
-	printf "$0; you must provide an id (--id number, where number is 0-255).\n">&2;
-	exit 2;
+	printf "\nMissing --id. ">&2;
+	print_usage_then_exit;
 fi
 
 case "$ID" in
@@ -281,7 +283,9 @@ case "$ID" in
 	254 ) exit 1; ;; #Experimentation and testing
 	255 ) exit 1; ;; #Reserved
 	*)		 #Unknown
-		printf "$0; the layer 4 protocol is unrecognised.\n">&2;
-		exit 2;
+		printf "\nInvalid --id. \n\n">&2;
+		printf "Refer to: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml\n\n">&2;
+		printf "It may be that a protocol was added. It is currently unsupported. Please contact the maintainer for support.\n\n">&2
+		print_usage_then_exit;
 	;;
 esac
