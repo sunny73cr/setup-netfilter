@@ -1,7 +1,7 @@
 #!/bin/sh
 
 print_usage_then_exit () {
-	echo "Usage: $0 --address <string>">&2;
+	printf "Usage: $0 --address XX:XX:XX:XX:XX:XX, where X is a-f, A-F, 0-9: hexadecimal.\n">&2;
 	exit 2;
 }
 
@@ -10,11 +10,11 @@ if [ "$1" = "" ]; then print_usage_then_exit; fi
 ADDRESS="";
 
 while true; do
-	case "$1" in
+	case $1 in
 		--address )
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
-			elif [ "$2" = "" ] || [ "$(echo $2 | grep -E '^-')" != "" ]; then
+			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
 				ADDRESS=$2;
@@ -27,7 +27,7 @@ while true; do
 done
 
 if [ -z "$ADDRESS" ]; then
-	echo "$0; you must provide a MAC address (--address XX:XX:XX:XX:XX:XX, where X is a-f, or A-F, or 0-9: hexadecimal)">&2;
+	printf "$0; you must provide a MAC address (--address XX:XX:XX:XX:XX:XX, where X is a-f, or A-F, or 0-9: hexadecimal)\n">&2;
 	exit 2;
 fi
 
