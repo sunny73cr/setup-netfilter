@@ -3,6 +3,7 @@
 print_usage_then_exit () {
 	printf "Usage: $0 <arguments>\n">&2;
 	printf "--port 1-65535\n">&2;
+	printf "\n">&2;
 	exit 2;
 }
 
@@ -23,12 +24,12 @@ while true; do
 			fi
 		;;
 		"") break; ;;
-		*) printf "Unrecognised argument - ">&2; print_usage_then_exit; ;;
+		*) printf "Unrecognised argument $1. ">&2; print_usage_then_exit; ;;
 	esac
 done
 
 if [ -z "$PORT" ]; then
-	printf "$0: you must provide a port. (number between 1 and 65535)\n">&2;
+	printf "\nMissing --port. ">&2;
 	exit 2;
 fi
 
