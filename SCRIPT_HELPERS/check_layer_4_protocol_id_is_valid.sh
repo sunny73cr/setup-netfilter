@@ -2,285 +2,287 @@
 
 #Source: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
 
-usage () {
+print_usage_then_exit () {
 	echo "Usage: $0 --id <number>">&2;
 	exit 2;
 }
 
 ID="";
 
-if [ "$1" = "" ]; then usage; fi
+if [ "$1" = "" ]; then print_usage_then_exit; fi
 
 while true; do
 	case "$1" in
 		--id )
-			ID="$2";
-			#if not enough arguments
-			if [ "$#" -lt 2 ]; then usage; else shift 2; fi
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ "$2" = "" ] || [ "$(echo $2 | grep -E '^-')" != "" ]; then
+				print_usage_then_exit;
+			else
+				ID=$2;
+				shift 2;
+			fi
 		;;
 		"") break; ;;
-		*)
-			echo "">&2;
-			echo "Unrecognised option: $1 $2">&2;
-			usage;
-		;;
+		*) printf "Unrecognised argumemt - ">&2; print_usage_then_exit; ;;
 	esac
 done
 
 if [ -z "$ID" ]; then
-	echo "$0; you must provide an id (--id <number>).">&2;
+	echo "$0; you must provide an id (--id number, where number is 0-255).">&2;
 	exit 2;
 fi
 
 case "$ID" in
-	0 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#HOPOPT / IPV6 Hop By Hop Option
-	1 ) echo "true"; exit 0; ;; 					#ICMP
-	2 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IGMP / Internet Group Management Protocol
-	3 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#GGP / Gateway to Gateway
-	4 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPV4 Encapsulation
-	5 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#ST / Stream
-	6 ) echo "true"; exit 0; ;; 					#TCP
-	7 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#CBT
-	8 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#EGP / Exterior Gateway Protocol
-	9 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IGP / Internet Gateway Protocol / Cisco IGRP
-	10 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#BBN RCC Monitoring
-	11 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#NVP / Network Voice Protocol
-	12 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#PUP
-	13 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#ARGUS
-	14 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#EMCON
-	15 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#XNET / Cross Network Debugger
-	16 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#CHAOS
-	17 ) echo "true"; exit 0; ;; 					#UDP
-	18 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#MUX / Multiplexing
-	19 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#DCN-MEAS / DNC Measurment Subsystems
-	20 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#HMP / Host Monitoring Protocol
-	21 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#PRM / Packet Radio Measurement
-	22 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#XNS-IDP / Xerox NS IDP
-	23 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#TRUNK-1
-	24 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#TRUNK-2
-	25 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#LEAF-1
-	26 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#LEAF-2
-	27 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#RDP / Reliable Data Protocol
-	28 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IRTP / Internet Reliable Transaction
-	29 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#ISO-TP4 / ISO Transport Protocol Class 4
-	30 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#NETBLT / Bulk Data Transfer Protocol
-	31 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#MFE-NSP / MFE Network Services Protocol
-	32 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#MERIT-INP / MERIT Internodal Protocol
-	33 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#DCCP / Datagram Congestion Control Protocol
-	34 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#3PC / Third Part Connect Protocol
-	35 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IDPR / Inter-Domain Policy Routing Protocol
-	36 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#XTP
-	37 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#DDP / Datagram Delivery Protocol
-	38 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IDPR-CMTP / IDPR Control Message Transport Protocol
-	39 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#TP++ / TP++ Transport Protocol
-	40 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IL / IL Transport Protocol
-	41 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPV6 Encapsulation
-	42 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SRDP / Source Demand Routing Protocol
-	43 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPV6-Route / Routing Header for IPV6
-	44 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPV6-Frag / Fragment Header for IPV6
-	45 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IDRP / Inter-Domain Routing Protocol
-	46 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#RSVP / Reservation Protocol
-	47 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#GRE / Generic Routing Encapsulation
-	48 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#DSR / Dynamic Source Routing Protocol
-	49 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#BNA
-	50 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#ESP / Encapsulation Security Protocol
-	51 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#AH / Authentication Header
-	52 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#I-NLSP / Integrated Net Layer Security TUBA
-	53 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SWIPE
-	54 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#NARP / NMBA Address Resolution Protocol
-	55 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Min-IPV4 / Minimal IPV4 Encapsulation Protocol
-	56 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#TLSP / Transport Layer Security Protocol using Kryptonet key management
-	57 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SKIP
-	58 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPV6-ICMP / ICMP for IPV6
-	59 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPV6-NoNxt / No Next Header for IPV6
-	60 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPV6-Opts / Destination Options for IPV6
-	61 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#any host internal protocol
-	62 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#CFTP
-	63 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#any local network
-	64 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SAT-EXPAK / SATNET and Backroom EXPAK
-	65 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#KRYPTOLAN
-	66 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#RVD / MIT Remote Virtual Disk Protocol
-	67 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPPC / Internet Pluribus Packet Core
-	68 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#any distributed file system
-	69 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SAT-MON / SATNET Monitoring
-	70 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#VISA Protocol
-	71 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPCV / Internet Packet Core Utility
-	72 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#CPNX / Computer Protocol Network Executive
-	73 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#CPHB / Computer Protocol Heartbeat
-	74 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#WSP / Wang Span Network
-	75 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#PVP / Packet Video Protocol
-	76 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#BR-SAT-MON / Backroom SATNET Monitoring
-	77 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SUN-ND / SUN ND Protocol - Temporary
-	78 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#WB-MON / Wideband Monitoring
-	79 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#WB-EXPAK / WIDEBAND EXPAK
-	80 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#ISO-IP / ISO Internet Protocol
-	81 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#VMTP
-	82 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Secure-VMTP
-	83 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#VINES
-	84 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPTM / Internet Protocol Traffic Manager
-	85 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#NSFNET-IGP
-	86 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#DGP / Dissimilar Gateway Protocol
-	87 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#TCF
-	88 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#EIGRP
-	89 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#OSPFIGP
-	90 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Sprite RPC Protocol
-	91 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#LARP / Locus Address Resolution Protocol
-	92 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#MTP / Multicast Transport Protocol
-	93 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#AX.25 Frames
-	94 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPIP / IP-within-IP Encapsulation Protocol
-	95 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#MICP / Mobile Internetworkking Control Protocol
-	96 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SCC-SP / Semaphore Communications Secure Protocol
-	97 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#ETHERIP / Ethernet within IP encapsulation protocol
-	98 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#ENCAP / Encapsulation Header
-	99 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#any private encryption scheme
-	100 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#GMTP
-	101 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IFMP / Ipsilon Flow Management Protocol
-	102 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#PNNI / PNNI over IP
-	103 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#PIM / Protocol Independent Multicast
-	104 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#ARIS
-	105 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SCPS
-	106 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#QNX
-	107 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#A/N or Active Networks
-	108 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPComp / IP Payload Compression Protocol
-	109 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SNP / Sierra Networks Protocol
-	110 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Compaq-Peer / Compaq Peer Protocol
-	111 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPX-in-IP
-	112 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#VRRP / Virtual Router Redundancy Protocol
-	113 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#PGM / PGM Reliable Transport Protocol
-	114 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#any 0-hop protocol
-	115 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#L2TP / Layer 2 Tunelling Protocol
-	116 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#DDX / D-II Data Exchange
-	117 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IATP / Interactive Agent Trasfer Protocol
-	118 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#STP / Schedule Transfer Protocol
-	119 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SRP / SepctraLink Radio Protocol
-	120 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#UTI
-	121 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SMP / Simple Message Protocol
-	122 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SM / Simple Multicast Protocol
-	123 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#PTP / Performance Transparency Protocol
-	124 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#ISIS over IPV4
-	125 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#FIRE
-	126 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#CRTP / Combat Radio Transport Protocol
-	127 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#CRUDP / Combat Radio User Datagram
-	128 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SSCOPMCE
-	129 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#IPLT
-	130 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SPS / Secure Packet Shield
-	131 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#PIPE / Private IP Encapsulation Within IP
-	132 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#SCTP / Stream Control Transmission Protocol
-	133 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#FC / Fibre Channel
-	134 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#RSVP-E2E-IGNORE
-	135 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Mobility Header
-	136 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#UDP-Lite
-	137 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#MPLS-in-IP
-	138 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#manet / MANET Protocols
-	139 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#HIP / Host Identity Protocol
-	140 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Shim6 Protocol
-	141 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#WESP / Wrapped Encapsulation Security Payload
-	142 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#ROHC / Robust Header Compression
-	143 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Ethernet
-	144 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#AGGFRAG / AGGFRAG encapsulation payload for ESP
-	145 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#NSH / Network Service Header
-	146 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	147 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	148 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	149 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	150 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	151 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	152 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	153 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	154 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	155 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	156 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	157 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	158 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	159 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	160 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	161 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	162 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	163 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	164 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	165 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	166 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	167 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	168 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	169 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	170 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	171 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	172 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	173 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	174 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	175 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	176 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	177 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	178 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	179 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	180 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	181 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	182 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	183 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	184 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	185 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	186 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	187 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	188 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	199 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	200 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	201 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	202 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	203 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	204 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	205 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	206 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	207 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	208 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	209 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	210 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	211 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	212 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	213 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	214 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	215 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	216 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	217 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	218 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	219 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	220 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	221 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	222 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	223 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	224 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	225 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	226 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	227 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	228 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	229 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	230 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	231 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	232 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	233 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	234 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	235 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	236 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	237 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	238 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	239 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	240 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	241 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	242 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	243 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	244 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	245 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	246 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	247 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	248 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	249 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	250 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	251 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	252 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Unassigned
-	253 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Experimentation and testing
-	254 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Experimentation and testing
-	255 ) echo "$0; unsupported layer 4 protocol">&2; exit 2; ;;	#Reserved
+	0 ) exit 1; ;; #HOPOPT / IPV6 Hop By Hop Option
+	1 ) exit 0; ;; #ICMP
+	2 ) exit 1; ;; #IGMP / Internet Group Management Protocol
+	3 ) exit 1; ;; #GGP / Gateway to Gateway
+	4 ) exit 1; ;; #IPV4 Encapsulation
+	5 ) exit 1; ;; #ST / Stream
+	6 ) exit 0; ;; #TCP
+	7 ) exit 1; ;; #CBT
+	8 ) exit 1; ;; #EGP / Exterior Gateway Protocol
+	9 ) exit 1; ;; #IGP / Internet Gateway Protocol / Cisco IGRP
+	10 ) exit 1; ;; #BBN RCC Monitoring
+	11 ) exit 1; ;; #NVP / Network Voice Protocol
+	12 ) exit 1; ;; #PUP
+	13 ) exit 1; ;; #ARGUS
+	14 ) exit 1; ;; #EMCON
+	15 ) exit 1; ;; #XNET / Cross Network Debugger
+	16 ) exit 1; ;; #CHAOS
+	17 ) exit 0; ;; #UDP
+	18 ) exit 1; ;; #MUX / Multiplexing
+	19 ) exit 1; ;; #DCN-MEAS / DNC Measurment Subsystems
+	20 ) exit 1; ;; #HMP / Host Monitoring Protocol
+	21 ) exit 1; ;; #PRM / Packet Radio Measurement
+	22 ) exit 1; ;; #XNS-IDP / Xerox NS IDP
+	23 ) exit 1; ;; #TRUNK-1
+	24 ) exit 1; ;; #TRUNK-2
+	25 ) exit 1; ;; #LEAF-1
+	26 ) exit 1; ;; #LEAF-2
+	27 ) exit 1; ;; #RDP / Reliable Data Protocol
+	28 ) exit 1; ;; #IRTP / Internet Reliable Transaction
+	29 ) exit 1; ;; #ISO-TP4 / ISO Transport Protocol Class 4
+	30 ) exit 1; ;; #NETBLT / Bulk Data Transfer Protocol
+	31 ) exit 1; ;; #MFE-NSP / MFE Network Services Protocol
+	32 ) exit 1; ;; #MERIT-INP / MERIT Internodal Protocol
+	33 ) exit 1; ;; #DCCP / Datagram Congestion Control Protocol
+	34 ) exit 1; ;; #3PC / Third Part Connect Protocol
+	35 ) exit 1; ;; #IDPR / Inter-Domain Policy Routing Protocol
+	36 ) exit 1; ;; #XTP
+	37 ) exit 1; ;; #DDP / Datagram Delivery Protocol
+	38 ) exit 1; ;; #IDPR-CMTP / IDPR Control Message Transport Protocol
+	39 ) exit 1; ;; #TP++ / TP++ Transport Protocol
+	40 ) exit 1; ;; #IL / IL Transport Protocol
+	41 ) exit 1; ;; #IPV6 Encapsulation
+	42 ) exit 1; ;; #SRDP / Source Demand Routing Protocol
+	43 ) exit 1; ;; #IPV6-Route / Routing Header for IPV6
+	44 ) exit 1; ;; #IPV6-Frag / Fragment Header for IPV6
+	45 ) exit 1; ;; #IDRP / Inter-Domain Routing Protocol
+	46 ) exit 1; ;; #RSVP / Reservation Protocol
+	47 ) exit 1; ;; #GRE / Generic Routing Encapsulation
+	48 ) exit 1; ;; #DSR / Dynamic Source Routing Protocol
+	49 ) exit 1; ;; #BNA
+	50 ) exit 1; ;; #ESP / Encapsulation Security Protocol
+	51 ) exit 1; ;; #AH / Authentication Header
+	52 ) exit 1; ;; #I-NLSP / Integrated Net Layer Security TUBA
+	53 ) exit 1; ;; #SWIPE
+	54 ) exit 1; ;; #NARP / NMBA Address Resolution Protocol
+	55 ) exit 1; ;; #Min-IPV4 / Minimal IPV4 Encapsulation Protocol
+	56 ) exit 1; ;; #TLSP / Transport Layer Security Protocol using Kryptonet key management
+	57 ) exit 1; ;; #SKIP
+	58 ) exit 1; ;; #IPV6-ICMP / ICMP for IPV6
+	59 ) exit 1; ;; #IPV6-NoNxt / No Next Header for IPV6
+	60 ) exit 1; ;; #IPV6-Opts / Destination Options for IPV6
+	61 ) exit 1; ;; #any host internal protocol
+	62 ) exit 1; ;; #CFTP
+	63 ) exit 1; ;; #any local network
+	64 ) exit 1; ;; #SAT-EXPAK / SATNET and Backroom EXPAK
+	65 ) exit 1; ;; #KRYPTOLAN
+	66 ) exit 1; ;; #RVD / MIT Remote Virtual Disk Protocol
+	67 ) exit 1; ;; #IPPC / Internet Pluribus Packet Core
+	68 ) exit 1; ;; #any distributed file system
+	69 ) exit 1; ;; #SAT-MON / SATNET Monitoring
+	70 ) exit 1; ;; #VISA Protocol
+	71 ) exit 1; ;; #IPCV / Internet Packet Core Utility
+	72 ) exit 1; ;; #CPNX / Computer Protocol Network Executive
+	73 ) exit 1; ;; #CPHB / Computer Protocol Heartbeat
+	74 ) exit 1; ;; #WSP / Wang Span Network
+	75 ) exit 1; ;; #PVP / Packet Video Protocol
+	76 ) exit 1; ;; #BR-SAT-MON / Backroom SATNET Monitoring
+	77 ) exit 1; ;; #SUN-ND / SUN ND Protocol - Temporary
+	78 ) exit 1; ;; #WB-MON / Wideband Monitoring
+	79 ) exit 1; ;; #WB-EXPAK / WIDEBAND EXPAK
+	80 ) exit 1; ;; #ISO-IP / ISO Internet Protocol
+	81 ) exit 1; ;; #VMTP
+	82 ) exit 1; ;; #Secure-VMTP
+	83 ) exit 1; ;; #VINES
+	84 ) exit 1; ;; #IPTM / Internet Protocol Traffic Manager
+	85 ) exit 1; ;; #NSFNET-IGP
+	86 ) exit 1; ;; #DGP / Dissimilar Gateway Protocol
+	87 ) exit 1; ;; #TCF
+	88 ) exit 1; ;; #EIGRP
+	89 ) exit 1; ;; #OSPFIGP
+	90 ) exit 1; ;; #Sprite RPC Protocol
+	91 ) exit 1; ;; #LARP / Locus Address Resolution Protocol
+	92 ) exit 1; ;; #MTP / Multicast Transport Protocol
+	93 ) exit 1; ;; #AX.25 Frames
+	94 ) exit 1; ;; #IPIP / IP-within-IP Encapsulation Protocol
+	95 ) exit 1; ;; #MICP / Mobile Internetworkking Control Protocol
+	96 ) exit 1; ;; #SCC-SP / Semaphore Communications Secure Protocol
+	97 ) exit 1; ;; #ETHERIP / Ethernet within IP encapsulation protocol
+	98 ) exit 1; ;; #ENCAP / Encapsulation Header
+	99 ) exit 1; ;; #any private encryption scheme
+	100 ) exit 1; ;; #GMTP
+	101 ) exit 1; ;; #IFMP / Ipsilon Flow Management Protocol
+	102 ) exit 1; ;; #PNNI / PNNI over IP
+	103 ) exit 1; ;; #PIM / Protocol Independent Multicast
+	104 ) exit 1; ;; #ARIS
+	105 ) exit 1; ;; #SCPS
+	106 ) exit 1; ;; #QNX
+	107 ) exit 1; ;; #A/N or Active Networks
+	108 ) exit 1; ;; #IPComp / IP Payload Compression Protocol
+	109 ) exit 1; ;; #SNP / Sierra Networks Protocol
+	110 ) exit 1; ;; #Compaq-Peer / Compaq Peer Protocol
+	111 ) exit 1; ;; #IPX-in-IP
+	112 ) exit 1; ;; #VRRP / Virtual Router Redundancy Protocol
+	113 ) exit 1; ;; #PGM / PGM Reliable Transport Protocol
+	114 ) exit 1; ;; #any 0-hop protocol
+	115 ) exit 1; ;; #L2TP / Layer 2 Tunelling Protocol
+	116 ) exit 1; ;; #DDX / D-II Data Exchange
+	117 ) exit 1; ;; #IATP / Interactive Agent Trasfer Protocol
+	118 ) exit 1; ;; #STP / Schedule Transfer Protocol
+	119 ) exit 1; ;; #SRP / SepctraLink Radio Protocol
+	120 ) exit 1; ;; #UTI
+	121 ) exit 1; ;; #SMP / Simple Message Protocol
+	122 ) exit 1; ;; #SM / Simple Multicast Protocol
+	123 ) exit 1; ;; #PTP / Performance Transparency Protocol
+	124 ) exit 1; ;; #ISIS over IPV4
+	125 ) exit 1; ;; #FIRE
+	126 ) exit 1; ;; #CRTP / Combat Radio Transport Protocol
+	127 ) exit 1; ;; #CRUDP / Combat Radio User Datagram
+	128 ) exit 1; ;; #SSCOPMCE
+	129 ) exit 1; ;; #IPLT
+	130 ) exit 1; ;; #SPS / Secure Packet Shield
+	131 ) exit 1; ;; #PIPE / Private IP Encapsulation Within IP
+	132 ) exit 1; ;; #SCTP / Stream Control Transmission Protocol
+	133 ) exit 1; ;; #FC / Fibre Channel
+	134 ) exit 1; ;; #RSVP-E2E-IGNORE
+	135 ) exit 1; ;; #Mobility Header
+	136 ) exit 1; ;; #UDP-Lite
+	137 ) exit 1; ;; #MPLS-in-IP
+	138 ) exit 1; ;; #manet / MANET Protocols
+	139 ) exit 1; ;; #HIP / Host Identity Protocol
+	140 ) exit 1; ;; #Shim6 Protocol
+	141 ) exit 1; ;; #WESP / Wrapped Encapsulation Security Payload
+	142 ) exit 1; ;; #ROHC / Robust Header Compression
+	143 ) exit 1; ;; #Ethernet
+	144 ) exit 1; ;; #AGGFRAG / AGGFRAG encapsulation payload for ESP
+	145 ) exit 1; ;; #NSH / Network Service Header
+	146 ) exit 1; ;; #Unassigned
+	147 ) exit 1; ;; #Unassigned
+	148 ) exit 1; ;; #Unassigned
+	149 ) exit 1; ;; #Unassigned
+	150 ) exit 1; ;; #Unassigned
+	151 ) exit 1; ;; #Unassigned
+	152 ) exit 1; ;; #Unassigned
+	153 ) exit 1; ;; #Unassigned
+	154 ) exit 1; ;; #Unassigned
+	155 ) exit 1; ;; #Unassigned
+	156 ) exit 1; ;; #Unassigned
+	157 ) exit 1; ;; #Unassigned
+	158 ) exit 1; ;; #Unassigned
+	159 ) exit 1; ;; #Unassigned
+	160 ) exit 1; ;; #Unassigned
+	161 ) exit 1; ;; #Unassigned
+	162 ) exit 1; ;; #Unassigned
+	163 ) exit 1; ;; #Unassigned
+	164 ) exit 1; ;; #Unassigned
+	165 ) exit 1; ;; #Unassigned
+	166 ) exit 1; ;; #Unassigned
+	167 ) exit 1; ;; #Unassigned
+	168 ) exit 1; ;; #Unassigned
+	169 ) exit 1; ;; #Unassigned
+	170 ) exit 1; ;; #Unassigned
+	171 ) exit 1; ;; #Unassigned
+	172 ) exit 1; ;; #Unassigned
+	173 ) exit 1; ;; #Unassigned
+	174 ) exit 1; ;; #Unassigned
+	175 ) exit 1; ;; #Unassigned
+	176 ) exit 1; ;; #Unassigned
+	177 ) exit 1; ;; #Unassigned
+	178 ) exit 1; ;; #Unassigned
+	179 ) exit 1; ;; #Unassigned
+	180 ) exit 1; ;; #Unassigned
+	181 ) exit 1; ;; #Unassigned
+	182 ) exit 1; ;; #Unassigned
+	183 ) exit 1; ;; #Unassigned
+	184 ) exit 1; ;; #Unassigned
+	185 ) exit 1; ;; #Unassigned
+	186 ) exit 1; ;; #Unassigned
+	187 ) exit 1; ;; #Unassigned
+	188 ) exit 1; ;; #Unassigned
+	199 ) exit 1; ;; #Unassigned
+	200 ) exit 1; ;; #Unassigned
+	201 ) exit 1; ;; #Unassigned
+	202 ) exit 1; ;; #Unassigned
+	203 ) exit 1; ;; #Unassigned
+	204 ) exit 1; ;; #Unassigned
+	205 ) exit 1; ;; #Unassigned
+	206 ) exit 1; ;; #Unassigned
+	207 ) exit 1; ;; #Unassigned
+	208 ) exit 1; ;; #Unassigned
+	209 ) exit 1; ;; #Unassigned
+	210 ) exit 1; ;; #Unassigned
+	211 ) exit 1; ;; #Unassigned
+	212 ) exit 1; ;; #Unassigned
+	213 ) exit 1; ;; #Unassigned
+	214 ) exit 1; ;; #Unassigned
+	215 ) exit 1; ;; #Unassigned
+	216 ) exit 1; ;; #Unassigned
+	217 ) exit 1; ;; #Unassigned
+	218 ) exit 1; ;; #Unassigned
+	219 ) exit 1; ;; #Unassigned
+	220 ) exit 1; ;; #Unassigned
+	221 ) exit 1; ;; #Unassigned
+	222 ) exit 1; ;; #Unassigned
+	223 ) exit 1; ;; #Unassigned
+	224 ) exit 1; ;; #Unassigned
+	225 ) exit 1; ;; #Unassigned
+	226 ) exit 1; ;; #Unassigned
+	227 ) exit 1; ;; #Unassigned
+	228 ) exit 1; ;; #Unassigned
+	229 ) exit 1; ;; #Unassigned
+	230 ) exit 1; ;; #Unassigned
+	231 ) exit 1; ;; #Unassigned
+	232 ) exit 1; ;; #Unassigned
+	233 ) exit 1; ;; #Unassigned
+	234 ) exit 1; ;; #Unassigned
+	235 ) exit 1; ;; #Unassigned
+	236 ) exit 1; ;; #Unassigned
+	237 ) exit 1; ;; #Unassigned
+	238 ) exit 1; ;; #Unassigned
+	239 ) exit 1; ;; #Unassigned
+	240 ) exit 1; ;; #Unassigned
+	241 ) exit 1; ;; #Unassigned
+	242 ) exit 1; ;; #Unassigned
+	243 ) exit 1; ;; #Unassigned
+	244 ) exit 1; ;; #Unassigned
+	245 ) exit 1; ;; #Unassigned
+	246 ) exit 1; ;; #Unassigned
+	247 ) exit 1; ;; #Unassigned
+	248 ) exit 1; ;; #Unassigned
+	249 ) exit 1; ;; #Unassigned
+	250 ) exit 1; ;; #Unassigned
+	251 ) exit 1; ;; #Unassigned
+	252 ) exit 1; ;; #Unassigned
+	253 ) exit 1; ;; #Experimentation and testing
+	254 ) exit 1; ;; #Experimentation and testing
+	255 ) exit 1; ;; #Reserved
 	*)								#Unknown
 		echo "$0; the layer 4 protocol is unrecognised.">&2;
 		exit 2;
 	;;
 esac
+if [ -z "$ENV_SETUP_NFT" ]; then printf "Set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.">&2; exit 4; fi
