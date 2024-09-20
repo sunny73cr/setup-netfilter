@@ -1,46 +1,46 @@
 #!/bin/sh
 
-DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS="./SCRIPT_HELPERS/check_mac_address_is_valid.sh";
+if [ -z "$ENV_SETUP_NFT" ]; then printf "Set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.">&2; exit 4; fi
 
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS" ]; then
+DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_is_valid.sh";
+
+if [ ! -x $DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS ]; then
 	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\" is missing or is not executable.">&2;
 	exit 3;
 fi
 
-check_success () {
-	if [ "$?" -ne 0 ]; then
-		echo "$0; cannot check if the MAC address is a globally unique address.">&2;
-		exit 3;
-	fi
-}
-
-usage () {
+print_usage_and_exit () {
 	echo "Usage: $0 --address <string>">&2;
 	exit 2;
 }
 
-ADDRESS="";
+if [ "$1" = "" ]; then print_usage_and_exit; fi
 
-if [ "$1" = "" ]; then usage; fi
+ADDRESS="";
 
 while true; do
 	case "$1" in
-		--address )
-			ADDRESS="$2";
-			#if not enough arguments
-			if [ "$#" -lt 2 ]; then usage; else shift 2; fi
+		--address)
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ "$2" = "" ] || [ "$(echo $2 | grep -E '^-')" != "" ]; then
+				print_usage_then_exit;
+			else
+				ADDRESS=$2;
+				shift 2;
+			fi
 		;;
-		"" ) break; ;;
-		*)
-			echo "">&2;
-			echo "Unrecognised option: $1 $2">&2;
-			usage;
-		;;
+		"") break; ;;
+		*) printf "Unrecognised argument - ">&2; print_usage_and_exit; ;;
 	esac
 done
 
-IS_MAC_ADDRESS_VALID=$("$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS" --address "$ADDRESS");
-check_success;
+$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS --address "$ADDRESS"
+case $? in
+	0) ;;
+	1) printf "$0: the mac address you provided in invalid. It must be in the form XX:XX:XX:XX:XX:XX, where X is a-f, or A-F or 0-9.">&2; exit 2; ;;
+	*) printf "$0: script dependency failure: \"\" produced a failure exit code,">&2 exit 3 ;;
+esac
 
 FIRST_OCTET=$(echo "$ADDRESS" | cut -d ':' -f 1);
 
@@ -50,6 +50,5 @@ if [ "$MASK_FIRST_OCTET" -eq 0 ]; then
 #the 2nd least significant bit in the first octet is not 1.
 	exit 0;
 else
-	echo "$0; the MAC address is not a globally unique address.">&2;
-	exit 2;
+	exit 1;
 fi
