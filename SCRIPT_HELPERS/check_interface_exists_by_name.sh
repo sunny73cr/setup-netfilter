@@ -1,7 +1,7 @@
 #!/bin/sh
 
 print_usage_then_exit () {
-	echo "Usage: $0 --name <string>" 1>&2;
+	printf "Usage: $0 --name value.\n">&2;
 	exit 2;
 }
 
@@ -10,13 +10,13 @@ NAME="";
 if [ "$1" = "" ]; then print_usage_then_exit; fi
 
 while true; do
-	case "$1" in
+	case $1 in
 		--name)
 			#not enough argyments
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			#value is empty
-			elif [ "$2" = "" ] || [ "$(echo $2 | grep -E '^-')" != "" ]; then
+			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
 				NAME=$2;
@@ -29,7 +29,7 @@ while true; do
 done
 
 if [ -z "$NAME" ]; then
-	echo "$0; you must provide a name (--name <string>).">&2;
+	printf "$0: you must provide a name.\n">&2;
 	exit 2;
 fi
 
@@ -40,6 +40,6 @@ INTERFACE_DESCRIPTIONS_FILTERED_BY_NAME=$(echo "$ALL_INTERFACE_DESCRIPTIONS_BRIE
 if [ -n "$INTERFACE_DESCRIPTIONS_FILTERED_BY_NAME" ]; then
 	exit 0;
 else
-	echo "$0; that interface does not exist.">&2;
+	printf "$0: that interface does not exist.\n">&2;
 	exit 1;
 fi
