@@ -1,7 +1,7 @@
 #!/bin/sh
 
 print_usage_then_exit () {
-	echo "Usage: $0 --id <string>">&2;
+	echo "Usage: $0 --id 1-4096">&2;
 	exit 2;
 }
 
@@ -14,7 +14,7 @@ while true; do
 		--id)
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
-			elif [ "$2" = "" ] || [ "$(echo $2 | grep -E '^-')" != "" ]; then
+			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
 				ID=$2;
@@ -27,17 +27,17 @@ while true; do
 done
 
 if [ -z "$ID" ]; then
-	echo "$0; you must provide an id (--id number, where number is between 1 and 4096).">&2;
+	printf "$0; you must provide an id (--id number, where number is between 1 and 4096).\n">&2;
 	exit 2;
 fi
 
 if [ "$ID" -lt 1 ]; then
-	echo "$0; the vlan id is too low.">&2;
+	printf "$0; the vlan id is too low.\n">&2;
 	exit 1;
 fi
 
 if [ "$ID" -gt 4096 ]; then
-	echo "$0; the vlan id is too high.">&2;
+	printf "$0; the vlan id is too high.\n">&2;
 	exit 1;
 fi
 
