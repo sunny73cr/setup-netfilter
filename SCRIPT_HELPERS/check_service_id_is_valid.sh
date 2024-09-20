@@ -1,7 +1,9 @@
 #!/bin/sh
 
 print_usage_and_exit () {
-	echo "Usage: $0 --service-user-id 0-65535">&2;
+	printf "Usage: $0 <argument>\n">&2
+	printf " --service-user-id (0-65535)\n">&2;
+	printf "\n">&2;
 	exit 2;
 }
 
@@ -11,7 +13,7 @@ SERVICE_USER_ID="";
 
 while true; do
 	case $1 in
-		--service-user-id)
+		--id)
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			elif [ "$2" = "" ]; then
@@ -22,13 +24,13 @@ while true; do
 			fi
 		;;
 		"") break; ;;
-		*) printf "Unrecognised argument - ">&2; print_usage_and_exit; ;;
+		*) printf "Unrecognised argument $1. ">&2; print_usage_and_exit; ;;
 	esac
 done;
 
 if [ -z "$SERVICE_USER_ID" ]; then
-	printf "$0; you must provide a service user id.\n">&2;
-	exit 2;
+	printf "\nMissing --id. ">&2;
+	print_usage_then_exit;
 fi
 
 if [ "$(echo $SERVICE_USER_ID | grep -E '^[0-9]{1,5}$')" = "" ]; then
