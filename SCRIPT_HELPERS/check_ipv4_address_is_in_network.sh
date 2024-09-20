@@ -102,21 +102,23 @@ $DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID --network "$NETWORK"
 case $? in
 	0)
 	1) echo "$0: the ip network you supplied is invalid.">&2; exit 2; ;;
-	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
 esac
+
+if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
 ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY \
 --address "$ADDRESS" \
 --output-bit-order "little-endian");
 case $? in
 	0)
-	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY\" produced a failure exit code.">&2; exit 3; ;;
 esac
 
 CIDR_NETWORK_BASE_ADDRESS=$($DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS --network "$NETWORK");
 case $? in
 	0)
-	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\" produced a failure exit code.">&2; exit 3; ;;
 esac
 
 CIDR_NETWORK_BASE_ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY \
@@ -124,13 +126,13 @@ CIDR_NETWORK_BASE_ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_
 --output-bit-order "little-endian");
 case $? in
 	0)
-	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY\" produced a failure exit code.">&2; exit 3; ;;
 esac
 
 CIDR_NETWORK_END_ADDRESS=$($DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS --network "$NETWORK");
 case $? in
 	0)
-	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CIDR_NETWORK_TO_END_ADDRESS\" produced a failure exit code.">&2; exit 3; ;;
 esac
 
 CIDR_NETWORK_END_ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY \
@@ -138,7 +140,7 @@ CIDR_NETWORK_END_ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_T
 --output-bit-order "little-endian");
 case $? in
 	0)
-	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.">&2; exit 3; ;;
+	*) echo "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY\" produced a failure exit code.">&2; exit 3; ;;
 esac
 
 #
