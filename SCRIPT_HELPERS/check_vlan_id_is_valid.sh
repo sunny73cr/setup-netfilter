@@ -1,7 +1,9 @@
 #!/bin/sh
 
 print_usage_then_exit () {
-	echo "Usage: $0 --id 1-4096">&2;
+	printf "Usage: $0 <arguments>\n">&2
+	printf " --id (1-4096)\n">&2;
+	printf "\n">&2;
 	exit 2;
 }
 
@@ -22,13 +24,13 @@ while true; do
 			fi
 		;;
 		"") break; ;;
-		*) printf "Unrecognised argument - ">&2; print_usage_then_exit; ;;
+		*) printf "Unrecognised argument $1. ">&2; print_usage_then_exit; ;;
 	esac
 done
 
 if [ -z "$ID" ]; then
-	printf "$0; you must provide an id (--id number, where number is between 1 and 4096).\n">&2;
-	exit 2;
+	printf "\nMissing --id. ">&2;
+	print_usage_then_exit;
 fi
 
 if [ "$ID" -lt 1 ]; then
