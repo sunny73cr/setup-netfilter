@@ -2,9 +2,16 @@
 
 if [ -z "$ENV_SETUP_NFT" ]; then printf "setup-netfilter: set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.\n">&2; exit 4; fi
 
+DEP_SCRIPT_PATH_VLAIDATE_IPV4_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
+
+if [ ! -x $DEP_SCRIPT_PATH_VLAIDATE_IPV4_ADDRESS ]; then
+	echo "$0: dependency \"$DEP_SCRIPT_PATH_VLAIDATE_IPV4_ADDRESS\" is missing or is not executable.\n">&2
+	exit 3;
+fi
+
 print_usage_then_exit () {
 	printf "Usage: $0 <arguments>\n">&2;
-	printf " --network X.X.X.X/Y, where X is 0-255, and Y is 1-32.\n">&2;
+	printf " --network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
 	exit 2;
 }
 
@@ -25,13 +32,13 @@ while true; do
 			fi
 		;;
 		"") break; ;;
-		*) printf "Unrecognised argument - ">&2; print_usage_then_exit; ;;
+		*) printf "Unrecognised argument $1. ">&2; print_usage_then_exit; ;;
 	esac
 done
 
 if [ -z "$ADDRESS" ]; then
-	printf "$0; you must provide an IPV4 network in CIDR form (X.X.X.X/Y, where X is 0-255, and Y is 1-32).\n">&2;
-	exit 1;
+	printf "\nMissing --address. ">&2;
+	print_usage_then_exit;
 fi
 
 NETWORK_ADDRESS=$(echo "$ADDRESS" | cut -d '/' -f 1);
@@ -46,7 +53,7 @@ $DEP_SCRIPT_PATH_VLAIDATE_IPV4_ADDRESS --address "$NETWORK_ADDRESS"
 case $? in
 	0) ;;
 	1) printf "$0: you have provided an invalid ip address. It must be in the form X.X.X.X, where X is 0-255\n">&2 exit 1; ;;
-	*) printf "$0: dependency script path failure: \"$DEP_SCRIPT_PATH_VLAIDATE_IPV4_ADDRESS\" produced a failure exit code.\n">&2 exit 3; ;;
+	*) printf "$0: dependency: \"$DEP_SCRIPT_PATH_VLAIDATE_IPV4_ADDRESS\" produced a failure exit code.\n">&2 exit 3; ;;
 esac
 
 CIDR_MASK=$(echo "$ADDRESS" | cut -d '/' -f 2);
