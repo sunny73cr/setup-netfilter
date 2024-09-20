@@ -5,7 +5,7 @@
 #TODO: Add all ethertypes to the switch case
 
 print_usage_then_exit () {
-	echo "Usage: $0 --id <string>">&2;
+	printf "Usage: $0 --id 0xYYYY, where Y is A-F, or 0-9.">&2;
 	exit 2;
 }
 
@@ -18,7 +18,7 @@ while true; do
 		--id)
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
-			elif [ "$2" = "" ] || [ "$(echo $2 | grep -E '^-')" != "" ]; then
+			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
 				ID=$2;
@@ -31,7 +31,7 @@ while true; do
 done
 
 if [ -z "$ID" ]; then
-	echo "$0; you must provide an id (--id <number>).">&2;
+	printf "$0: you must provide an id (--id 0xYYYY, where Y is A-F, 0-9).\n">&2;
 	exit 2;
 fi
 
@@ -72,7 +72,7 @@ case "$ID" in
 	"0x8100") exit 0; ;;	# VLAN tagged frame [802.1q]
 	"0x88A8") exit 0; ;;	# QinQ Service VLAN tag identifier [802.1q]
 	*)
-		echo "$0; the layer 2 protocol ID is unrecognised.">&2;
+		printf "$0: the layer 2 protocol ID is unrecognised.\n">&2;
 		exit 2;
 	;;
 esac
