@@ -1,59 +1,61 @@
 #!/bin/sh
 
-DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS="./SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
+if [ -z "$ENV_SETUP_NFT" ]; then printf "setup-netfilter: set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.\n">&2; exit 4; fi
 
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS" ]; then
+DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
+
+if [ ! -x $DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS ]; then
 	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" is missing or is not executable.">&2;
 	exit 3;
 fi
 
-check_success () {
-	if [ "$?" -ne 0 ]; then
-		echo "$0; cannot convert the IPV4 address to segments.">&2;
-		exit 3;
-	fi
-}
-
-usage () {
+print_usage_then_exit () {
 	echo "Usage: $0 --address <string>">&2;
 	exit 2;
 }
 
 ADDRESS="";
 
-if [ "$1" = "" ]; then usage; fi
+if [ "$1" = "" ]; then print_usage_then_exit; fi
 
 while true; do
 	case "$1" in
 		--address )
-			ADDRESS="$2";
-			#if not enough arguments
-			if [ "$#" -lt 2 ]; then usage; else shift 2; fi
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ "$2" = "" ]; then
+				print_usage_then_exit;
+			else
+				ADDRESS=$2;
+				shift 2;
+			fi
 		;;
-		"" ) break; ;;
-		*)
-			echo "">&2;
-			echo "Unrecognised option: $1 $2">&2;
-			usage;
-		;;
+		"") break; ;;
+		*) printf "Unrecognised argument $1. ">&2; print_usage_then_exit; ;;
 	esac
 done
 
 if [ -z "$ADDRESS" ]; then
-	echo "$0; you must provide an IPV4 address (--address <string>).">&2;
+	echo "\nMissing --address. ">&2;
 	exit 2;
 fi
 
-IS_IPV4_ADDRESS_VALID=$("$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS" --address "$ADDRESS");
-check_success
+$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS" --address "$ADDRESS"
+case $? in
+	0) ;;
+	1) printf "\nInvalid --address. "; print_usage_then_exit; ;;
+	*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" produced a failure exit code.">&2
+esac
 
 IPV4_ADDRESS_SEGMENT_1=$(echo "$ADDRESS" | cut -d '.' -f 1);
 IPV4_ADDRESS_SEGMENT_2=$(echo "$ADDRESS" | cut -d '.' -f 2);
 IPV4_ADDRESS_SEGMENT_3=$(echo "$ADDRESS" | cut -d '.' -f 3);
 IPV4_ADDRESS_SEGMENT_4=$(echo "$ADDRESS" | cut -d '.' -f 4);
 
-echo $IPV4_ADDRESS_SEGMENT_1;
-echo $IPV4_ADDRESS_SEGMENT_2;
-echo $IPV4_ADDRESS_SEGMENT_3;
-echo $IPV4_ADDRESS_SEGMENT_4;
+printf "$IPV4_ADDRESS_SEGMENT_1\n";
+printf "$IPV4_ADDRESS_SEGMENT_2\n";
+printf "$IPV4_ADDRESS_SEGMENT_3\n";
+printf "$IPV4_ADDRESS_SEGMENT_4\n";
+
 exit 0;
+
