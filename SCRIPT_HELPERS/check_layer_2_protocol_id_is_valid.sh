@@ -5,7 +5,9 @@
 #TODO: Add all ethertypes to the switch case
 
 print_usage_then_exit () {
-	printf "Usage: $0 --id 0xYYYY, where Y is A-F, or 0-9.">&2;
+	printf "Usage: $0 <arguments>\n">&2;
+	printf " --id 0xYYYY (where Y is A-F, or 0-9).\n">&2;
+	printf "\n">&2
 	exit 2;
 }
 
@@ -26,13 +28,13 @@ while true; do
 			fi
 		;;
 		"") break; ;;
-		*) printf "Unrecognised argument - ">&2; print_usage_then_exit; ;;
+		*) printf "Unrecognised argument $1. ">&2; print_usage_then_exit; ;;
 	esac
 done
 
 if [ -z "$ID" ]; then
-	printf "$0: you must provide an id (--id 0xYYYY, where Y is A-F, 0-9).\n">&2;
-	exit 2;
+	printf "\nMissing --id. ">&2;
+	print_usage_then_exit;
 fi
 
 case "$ID" in
@@ -72,7 +74,10 @@ case "$ID" in
 	"0x8100") exit 0; ;;	# VLAN tagged frame [802.1q]
 	"0x88A8") exit 0; ;;	# QinQ Service VLAN tag identifier [802.1q]
 	*)
-		printf "$0: the layer 2 protocol ID is unrecognised.\n">&2;
-		exit 2;
+		printf "\nInvalid --id. \n\n">&2;
+		printf "Refer to: https://www.iana.org/assignments/ieee-802-numbers/ieee-802.numbers.xhtml\n">&2;
+		printf "Refer to: https://standards-oui.ieee.org/ethertype/eth.csv\n\n">&2;
+		printf "Note: not all protocols are listed. If it does not work or is not in the script, it is unsupported.\n\n">&2;
+		print_usage_then_exit;
 	;;
 esac
