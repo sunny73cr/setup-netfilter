@@ -9,27 +9,27 @@ DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS="$ENV_SETUP_NFT/SCRI
 DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/convert_cidr_network_to_end_address.sh";
 
 if [ ! -x $DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID ]; then
-	printf "$0; dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" is missing or is not executable.\n">&2;
+	printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
 if [ ! -x $DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID ]; then
-	printf "$0; dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID\" is missing or is not executable.\n">&2;
+	printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
 if [ ! -x $DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY ]; then
-	printf "$0; dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY\" is missing or is not executable.\n">&2;
+	printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
 if [ ! -x $DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS ]; then
-	printf "$0; dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\" is missing or is not executable.\n">&2;
+	printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
 if [ ! -x $DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS ]; then
-	printf "$0; dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS\" is missing or is not executable.\n">&2;
+	printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
@@ -81,27 +81,27 @@ while true; do
 			shift 1;
 		;;
 		"") break; ;;
-		*) printf "Unrecognised argument - ">&2; print_usage_then_exit; ;;
+		*) printf "Unrecognised argument $1. ">&2; print_usage_then_exit; ;;
 	esac
 done
 
 if [ -z "$ADDRESS" ]; then
-	printf "$0; you must provide an ipv4 address (X.X.X.X, where X is 0-255)\n">&2;
-	exit 2;
+	printf "\nMissing --address. ">&2;
+	print_usage_then_exit;
 fi
 
 $DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address "$ADDRESS"
 case $? in
 	0)
-	1) printf "$0: the ip address you supplied is invalid.\n">&2; exit 2; ;;
-	*) printf "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n">&2; exit 3; ;;
+	1) printf "\nInvalid --address. ">&2; print_usage_then_exit; ;;
+	*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n">&2; exit 3; ;;
 esac
 
 $DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID --network "$NETWORK"
 case $? in
 	0)
-	1) printf "$0: the ip network you supplied is invalid.\n">&2; exit 2; ;;
-	*) printf "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID\" produced a failure exit code.\n">&2; exit 3; ;;
+	1) printf "\nInvalid --network. ">&2; print_usage_then_exit; ;;
+	*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID\" produced a failure exit code.\n">&2; exit 3; ;;
 esac
 
 if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
@@ -111,13 +111,13 @@ ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY \
 --output-bit-order "little-endian");
 case $? in
 	0)
-	*) printf "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY\" produced a failure exit code.\n">&2; exit 3; ;;
+	*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY\" produced a failure exit code.\n">&2; exit 3; ;;
 esac
 
 CIDR_NETWORK_BASE_ADDRESS=$($DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS --network "$NETWORK");
 case $? in
 	0)
-	*) printf "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\" produced a failure exit code.\n">&2; exit 3; ;;
+	*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\" produced a failure exit code.\n">&2; exit 3; ;;
 esac
 
 CIDR_NETWORK_BASE_ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY \
@@ -125,13 +125,13 @@ CIDR_NETWORK_BASE_ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_
 --output-bit-order "little-endian");
 case $? in
 	0)
-	*) printf "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY\" produced a failure exit code.\n">&2; exit 3; ;;
+	*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY\" produced a failure exit code.\n">&2; exit 3; ;;
 esac
 
 CIDR_NETWORK_END_ADDRESS=$($DEPENDENCY_SCRIPT_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS --network "$NETWORK");
 case $? in
 	0)
-	*) printf "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CIDR_NETWORK_TO_END_ADDRESS\" produced a failure exit code.\n">&2; exit 3; ;;
+	*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CIDR_NETWORK_TO_END_ADDRESS\" produced a failure exit code.\n">&2; exit 3; ;;
 esac
 
 CIDR_NETWORK_END_ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY \
@@ -139,7 +139,7 @@ CIDR_NETWORK_END_ADDRESS_BINARY=$($DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_T
 --output-bit-order "little-endian");
 case $? in
 	0)
-	*) printf "$0: dependency script failure: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY\" produced a failure exit code.\n">&2; exit 3; ;;
+	*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CONVERT_IPV4_ADDRESS_TO_BINARY\" produced a failure exit code.\n">&2; exit 3; ;;
 esac
 
 #
@@ -149,7 +149,7 @@ esac
 if \
 [ "$ADDRESS_BINARY" \< "$CIDR_NETWORK_BASE_ADDRESS_BINARY" ] || \
 [ "$ADDRESS_BINARY" \> "$CIDR_NETWORK_END_ADDRESS_BINARY" ]; then
-	printf "$0; the address is not contained within the network.\n">&2;
+	printf "$0: the address is not contained within the network.\n">&2;
 	exit 1;
 else
 	exit 0;
