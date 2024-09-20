@@ -5,25 +5,25 @@ if [ -z "$ENV_SETUP_NFT" ]; then printf "Set ENV_SETUP_NFT to the absolute path 
 DEPENDENCY_SCRIPT_PATH_SUBSTRING="$ENV_SETUP_NFT/SCRIPT_HELPERS/substring.sh";
 
 if [ ! -x $DEPENDENCY_SCRIPT_PATH_SUBSTRING ]; then
-	printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_SUBSTRING\" is missing or is not executable.\n">&2;
+	printf "$0; dependency: \"$DEPENDENCY_SCRIPT_PATH_SUBSTRING\" is missing or is not executable.\n">&2;
 	exit 2;
 fi
 
 DEPENDENCY_SCRIPT_PATH_EXPONENT="$ENV_SETUP_NFT/SCRIPT_HELPERS/exponent.sh";
 
 if [ ! -x $DEPENDENCY_SCRIPT_PATH_SUBSTRING ]; then
-	printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_EXPONENT\" is missing or is not executable.\n">&2;
+	printf "$0; dependency: \"$DEPENDENCY_SCRIPT_PATH_EXPONENT\" is missing or is not executable.\n">&2;
 	exit 2;
 fi
 
 print_usage_then_exit () {
 	printf "Usage: $0 <arguments>\n">&2;
-	printf " --number 0 - 4,294,967,296; without delimiters)\n">&2;
+	printf " --number (0 - 4,294,967,296; without delimiters)\n">&2;
 	printf "\n">&2;
-	printf " Optional: --output-bit-order 'big-endian' or 'little-endian' (no hyphens)\n">&2;
+	printf " Optional: --output-bit-order ('big-endian' or 'little-endian') (no hyphens)\n">&2;
 	printf " Note: if omitted, output-bit-order defaults to 'little endian'\n">&2;
 	printf "\n">&2;
-	printf " Optional: --output-bit-length 1 to 32\n">&2;
+	printf " Optional: --output-bit-length (1 to 32)\n">&2;
 	printf " Note: if omitted, output-bit-length defaults to the smallest length required.\n">&2;
 	printf " Note: if the output-bit-length is greater than neccessary, the binary string is padded with zeroes.\n">&2;
 	printf "\n">&2;
@@ -46,8 +46,6 @@ BIT_LENGTH="";
 ONLY_VALIDATE=0;
 SKIP_VALIDATE=0;
 NEWLINE_SUFFIX_OUTPUT=0;
-
-if [ "$1" = "" ]; then print_usage_then_exit; fi
 
 while true; do
 	case "$1" in
@@ -94,7 +92,7 @@ while true; do
 			shift 1;
 		;;
 		"") break; ;;
-		*) printf "Unrecognised argument - ">&2; print_usage_then_exit; ;;
+		*) printf "Unrecognised argument .">&2; print_usage_then_exit; ;;
 	esac
 done
 
@@ -103,57 +101,79 @@ if [ $ONLY_VALIDATE -eq 1 ] && [ $SKIP_VALIDATE -eq 1 ]; then
 	exit 0;
 fi
 
+if [ -z "$NUMBER" ]; then
+	NUMBER=$(dd if=/dev/stdin of=/dev/stdout bs=1 count=10 status=none);
+
+	if [ -z "$NUMBER" ]; then print_usage_then_exit; fi
+fi
+
 if [ $SKIP_VALIDATE -eq 0 ]; then
+	if [ -z "$NUMBER" ]; then
+		printf "\nMissing --number. ">&2;
+		print_usage_then_exit;
+	fi
+
 	if [ -n "$BIT_LENGTH" ]; then
-		if [ "$(printf $BIT_LENGTH | grep -E '^[1-9][0-9]{0,1}$')" = "" ]; then
-			printf "$0; output bit length must be number from 1-32.\n">&2;
-			exit 2;
+		if [ "$(echo $BIT_LENGTH | grep -E '^[1-9][0-9]{0,1}$')" = "" ]; then
+			printf "\nInvalid --bit-length. ">&2;
+			print_usage_then_exit;
 		fi
 
 		if [ "$BIT_LENGTH" -eq 0 ]; then
-			printf "$0; bit length should not be zero.\n">&2;
-			exit 2;
+			printf "\nInvalid --bit-length. ">&2;
+			print_usage_then_exit;
 		fi
 
 		if [ "$BIT_LENGTH" -gt 32 ]; then
-			printf "$0; bit length cannot be greater than 32.\n">&2;
-			exit 2;
+			printf "\nInvalid --bit-length. ">&2;
+			print_usage_then_exit;
 		fi
 
 		BIT_LENGTH_CAPACITY=$($DEPENDENCY_SCRIPT_PATH_EXPONENT --base 2 --exponent $BIT_LENGTH);
 		case $? in
 			0) ;;
-			*) printf "script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_EXPONENT\" produced a failure exit code.\n">&2; exit 3; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_EXPONENT\" produced a failure exit code.\n">&2; exit 3; ;;
 		esac
 		BIT_LENGTH_CAPACITY_MINUS_ONE=$(($BIT_LENGTH_CAPACITY - 1));
 	fi
 
 	if [ "$(printf $NUMBER | grep -E '^[0-9]{1,10}$')" = "" ]; then
-		printf "$0: you must provide a base 10 (decimal) number smaller than uint32 max (4,294,967,296). The number cannot contain any delimiters.\n">&2;
-		exit 2;
+		printf "\nInvalid --number. ">&2;
+		print_usage_then_exit;
 	fi
 
 	if [ $NUMBER -gt 4294967296 ]; then
-		printf "$0: you must provide a base 10 (decimal) number smaller than uint32 max (4,294,967,296).\n">&2;
-		exit 2;
+		printf "\nInvalid --number. ">&2;
+		print_usage_then_exit;
 	fi
 
 	if [ -n "$BIT_LENGTH" ]; then
 		if [ $NUMBER -gt $BIT_LENGTH_CAPACITY_MINUS_ONE ]; then
-			printf "$0: the number you provided is too large, the maximum number for the provided bit length is $BIT_LENGTH_CAPACITY_MINUS_ONE.\n">&2;
-			exit 2;
+			printf "\nInvalid --bit-length. ">&2;
+			print_usage_then_exit;
 		fi
 	fi
 
 	if [ -n "$BIT_ORDER" ]; then
 		case "$BIT_ORDER" in
-			"big-endian") BIT_ORDER=0; ;;
-			"little-endian") BIT_ORDER=1; ;;
-			*) printf "$0; unrecognised bit order (try 'big-endian' or 'little-endian' without quotes.)\n">&2; exit 2; ;;
+			"big-endian") ;;
+			"little-endian") ;;
+			*) printf "\nInvalid --bit-order. ">&2; print_usage_then_exit; ;;
 		esac
 	else
 		BIT_ORDER=1;
 	fi
+
+fi
+
+if [ -n "$BIT_ORDER" ]; then
+	case "$BIT_ORDER" in
+		"big-endian") BIT_ORDER=0; ;;
+		"little-endian") BIT_ORDER=1; ;;
+		*) BIT_ORDER=1; ;;
+	esac
+else
+	BIT_ORDER=1;
 fi
 
 if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
