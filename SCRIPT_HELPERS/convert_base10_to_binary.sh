@@ -11,7 +11,7 @@ fi
 
 DEPENDENCY_SCRIPT_PATH_EXPONENT="$ENV_SETUP_NFT/SCRIPT_HELPERS/exponent.sh";
 
-if [ ! -x $DEPENDENCY_SCRIPT_PATH_SUBSTRING ]; then
+if [ ! -x $DEPENDENCY_SCRIPT_PATH_EXPONENT ]; then
 	printf "$0; dependency: \"$DEPENDENCY_SCRIPT_PATH_EXPONENT\" is missing or is not executable.\n">&2;
 	exit 2;
 fi
@@ -113,6 +113,16 @@ if [ $SKIP_VALIDATE -eq 0 ]; then
 		print_usage_then_exit;
 	fi
 
+	if [ "$(printf $NUMBER | grep -E '^[0-9]{1,10}$')" = "" ]; then
+		printf "\nInvalid --number. ">&2;
+		print_usage_then_exit;
+	fi
+
+	if [ $NUMBER -gt 4294967296 ]; then
+		printf "\nInvalid --number. ">&2;
+		print_usage_then_exit;
+	fi
+
 	if [ -n "$BIT_LENGTH" ]; then
 		if [ "$(echo $BIT_LENGTH | grep -E '^[1-9][0-9]{0,1}$')" = "" ]; then
 			printf "\nInvalid --bit-length. ">&2;
@@ -135,19 +145,7 @@ if [ $SKIP_VALIDATE -eq 0 ]; then
 			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_EXPONENT\" produced a failure exit code.\n">&2; exit 3; ;;
 		esac
 		BIT_LENGTH_CAPACITY_MINUS_ONE=$(($BIT_LENGTH_CAPACITY - 1));
-	fi
 
-	if [ "$(printf $NUMBER | grep -E '^[0-9]{1,10}$')" = "" ]; then
-		printf "\nInvalid --number. ">&2;
-		print_usage_then_exit;
-	fi
-
-	if [ $NUMBER -gt 4294967296 ]; then
-		printf "\nInvalid --number. ">&2;
-		print_usage_then_exit;
-	fi
-
-	if [ -n "$BIT_LENGTH" ]; then
 		if [ $NUMBER -gt $BIT_LENGTH_CAPACITY_MINUS_ONE ]; then
 			printf "\nInvalid --bit-length. ">&2;
 			print_usage_then_exit;
