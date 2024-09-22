@@ -66,15 +66,16 @@ esac
 $SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_BROADCAST --address $ADDRESS;
 case $? in
 	1) ;;
-	0) printf "Invalid source mac address.\n">&2; exit 1; ;;
+	0) printf "Invalid source mac address.\n">&2; exit 0; ;;
 	*) printf "$0: dependency \"SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_BROADCAST\" produced a failure exit code.\n">&2; exit 3; ;;
 esac
 
 $SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_MULTICAST --address $ADDRESS;
 case $? in
 	1) ;;
-	0) printf "\nInvalid source mac address.\n">&2; exit 1; ;;
+	0) printf "\nInvalid source mac address.\n">&2; exit 0; ;;
 	*) printf "$0: dependency \"SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_MULTICAST\" produced a failure exit code.\n">&2; exit 3; ;;
 esac
 
-exit 0;
+#not banned
+exit 1;
