@@ -10,8 +10,9 @@ fi
 
 print_usage_then_exit () {
 	printf "Usage: $0 <arguments>\n">&2;
-	printf " --base number \n">&2;
-	printf " --exponent number \n">&2;
+	printf " --base number (decimal/floating-point numbers supported)\n">&2;
+	printf " --exponent number (decimal/floating-point numbers supported)\n">&2;
+	printf "\n">&2;
 	printf " Optional: --find-root \n">&2;
 	printf " Note: this flag causes the program to find the 'exponen-th root' of the base.\n">&2;
 	printf " Eg. square root = exponent 2, or cube root = exponent 3.\n">&2;
@@ -19,7 +20,7 @@ print_usage_then_exit () {
 	printf " It is likely that awk/gawk/mawk uses a floating point math library; and precision is not guaranteed.\n">&2;
 	printf " Please be aware that your shell likely only supports 32 bit numbers; and warning you the user\n">&2;
 	printf " of an overflow or underflow is not worth computing. Accuracy is therefore not guaranteed.\n">&2;
-	printf "">&2;
+	printf "\n">&2;
 	exit 2;
 }
 
@@ -27,7 +28,7 @@ if [ "$1" = "" ]; then print_usage_then_exit; fi
 
 BASE="";
 EXPONENT="";
-FIND_ROOT-0;
+FIND_ROOT=0;
 NEWLINE_SUFFIX_OUTPUT=0;
 
 while true; do
@@ -61,7 +62,7 @@ while true; do
 			shift 1;
 		;;
 		"") break; ;;
-		*) printf "Unrecognised argument $1. ">&2; print_usage_then_exit; ;;
+		*) printf "\nUnrecognised argument $1. ">&2; print_usage_then_exit; ;;
 	esac
 done
 
@@ -102,14 +103,14 @@ elif [ $FIND_ROOT -eq 1 ]; then
 		*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_ABSOLUTE\" produced a failure exit code."; exit 3; ;;
 	esac
 
-	EXPONENT_INVERSE=$(awk -v exponent=$EXPONENT_ABSOLUTE 'BEGIN{ print 1 / exponent }');
+	EXPONENT_INVERSE=$(awk -v exponent=$EXPONENT_ABSOLUTE -- 'BEGIN{ print 1 / exponent }');
 
-	ROOT=$(awk -v base=$BASE -v exponent=$EXPONENT_INVERSE 'BEGIN{ print base ^ exponent }');
+	ROOT=$(awk -v base=$BASE -v exponent=$EXPONENT_INVERSE -- 'BEGIN{ print base ^ exponent }');
 
 	printf "$ROOT";
 
 else
-	EXPONENTIATED=$(awk -v base=$BASE -v exponent=$EXPONENT 'BEGIN{print base ^ exponent}');
+	EXPONENTIATED=$(awk -v base=$BASE -v exponent=$EXPONENT -- 'BEGIN{print base ^ exponent}');
 
 	printf "$EXPONENTIATED";
 
