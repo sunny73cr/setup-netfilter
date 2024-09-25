@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ -z "$ENV_SETUP_NFT" ]; then printf "Set ENV_SETUP_NFT to the absolute path of the setup-netfilter directory first.">&2; exit 4; fi
+if [ -z "$ENV_SETUP_NFT" ]; then printf "setup-netfilter: set ENV_SETUP_NFT to the root path of the setup-netfilter directory before continuing.\n">&2; exit 4; fi
 
 DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_is_valid.sh";
 DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_source_is_banned.sh";
@@ -8,58 +8,109 @@ DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/chec
 DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_network_is_valid.sh";
 
 if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS" ]; then
-	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\" is missing or is not executable." 1>&2;
+	printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
 if [ ! -x "$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE" ]; then
-	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" is missing or is not executable." 1>&2;
+	printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
 if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS" ]; then
-	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" is missing or is not executable." 1>&2;
+	printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
 if [ ! -x "$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK" ]; then
-	echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" is missing or is not executable." 1>&2;
+	printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
-print_usage_then_exit () {
-	echo "Usage: $0 <arguments>">&2;
-	echo "Use case: a network client needs to check if an IP address is reserved by a peer.">&2;
-	echo "">&2;
-	echo "--source-mac-address XX:XX:XX:XX:XX:XX (where X is a-f, A-F, 0-9, or hexadecimal)">&2;
-	echo "Options:">&2;
-	echo "1. the mac address of the probing device">&2;
-	echo "2. no restrictions on source address."
-	echo "Note: it is strongly recommended to supply a source MAC address.">&2;
-	echo "">&2;
-	echo "--probed-address">&2
-	echo "Options:">&2
-	echo "--probed-address-ipv4 X.X.X.X (where X is 0-255)">&2
-	echo "--probed-network-ipv4 X.X.X.X/Y (where X is 0-255, and Y is 1-32)" 1>&2;
-	echo "Note: it is strongly recommended to supply either an address or a network.">&2;
-	echo "Note: you cannot supply both an address and a network.">&2;
+print_description() {
+	printf "A program that prints part of an NFT rule 'match' section. The match intends to identify ARP Probe packets.\n">&2;
+}
+
+print_description_then_exit() {
+	print_description;
 	exit 2;
 }
 
-if [ "$1" = "" ]; then print_usage_then_exit; fi
+if [ "$1" = "-e" ]; then print_description_then_exit; fi
 
+print_dependencies() {
+	printf "printf\n">&2;
+	printf "\n">&2;
+}
+
+print_dependencies_then_exit() {
+	print_dependencies;
+	exit 2;
+}
+
+if [ "$1" = "-d" ]; then print_dependencies_then_exit; fi
+
+print_usage() {
+	printf "Usage: $0 <parameters>\n">&2;
+	printf " -e\n">&2;
+	printf " calling the program with the '-e' flag prints an explanation of the scripts' function or purpose.\n">&2;
+	printf " The program then exits with a code of 2 (user input error).\n">&2;
+	printf "\n">&2;
+	printf " -h\n">&2;
+	printf " calling the program with the '-h' flag prints an explanation of the scripts' parameters and their effect.\n">&2;
+	printf " The program then exits with a code of 2 (user input error).\n">&2;
+	printf "\n">&2;
+	printf " -d\n">&2;
+	printf " callling the program with the '-d' flags prints a (new-line separated, and terminated) list of the programs' dependencies (what it needs to run).\n">&2;
+	printf " The program then exits with a code of 2 (user input error).\n">&2;
+	printf "\n">&2;
+	printf " -ehd\n">&2;
+	printf " calling the program with the '-ehd' flag (or, ehd-ucate me) prints the description, the dependencies list, and the usage text.\n">&2;
+	printf " The program then exits with a code of 2 (user input error).\n">&2;
+	printf "\n">&2;
+	printf " Note that calling all scripts in a project with the flag '-ehd', then concatenating their output using file redirection (string > file),\n">&2;
+	printf " Is a nice and easy way to maintain documentation for your project.\n">&2;
+	printf "\n">&2;
+	printf "Parameters:\n">&2;
+	printf "\n">&2;
+	printf " Optional: --source-mac-address XX:XX:XX:XX:XX:XX (where X is a-f, A-F, 0-9, or hexadecimal)\n">&2;
+	printf "   Options:\n">&2;
+	printf "    1. the mac address of the probing device.\n">&2;
+	printf "    2. no restrictions on source address.\n">&2;
+	printf "\n">&2;
+	printf "    Note: it is strongly recommended to supply a source MAC address.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --probed-address-ipv4 X.X.X.X (where X is 0-255)\n">&2
+	printf " Optional: --probed-network-ipv4 X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
+	printf " Note: it is strongly recommended to supply either an address or a network.\n">&2;
+	printf " Note: you cannot supply both an address and a network.\n">&2;
+	printf "\n">&2;
+}
+
+print_usage_then_exit() {
+	print_usage;
+	exit 2;
+}
+
+if [ "$1" = "-h" ]; then print_usage_then_exit; fi
+
+if [ "$1" = "-ehd" ]; then print_description; printf "\n">&2; print_dependencies; printf "\n">&2; print_usage; exit 2; fi
+
+#ARGUMENTS:
 MAC_ADDRESS_SOURCE="";
 PROBED_ADDRESS="";
 PROBED_NETWORK="";
 
+#FLAGS:
+
 while true; do
-	case "$1" in
+	case $1 in
 		--source-mac-address)
 			#not enough arguments
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			#the value is empty
-			elif [ "$2" = "" ] || [ "$(echo $2 | grep -G '^-')" != "" ]; then
+			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
 				MAC_ADDRESS_SOURCE=$2;
@@ -67,12 +118,12 @@ while true; do
 			fi
 		;;
 
-		--probed-address)
+		--probed-address-ipv4)
 			#not enough arguments
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			#the value is empty
-			elif [ "$2" = "" ] || [ "$(echo $2 | grep -G '^-')" != "" ]; then
+			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
 				PROBED_ADDRESS=$2;
@@ -80,36 +131,44 @@ while true; do
 			fi
 		;;
 
-		--probed-network)
+		--probed-network-ipv4)
 			#not enough arguments
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			#the value is empty
-			elif [ "$2" = "" ] || [ "$(echo $2 | grep -G '^-')" != "" ]; then
+			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
 				PROBED_NETWORK=$2;
 				shift 2;
 			fi
 		;;
+
+		#Handle the case of 'end' of arg parsing; where all flags are shifted from the list,
+		#or the program was called without any parameters. exit the arg parsing loop.
 		"") break; ;;
-		*) printf "Unrecognised argument - "; print_usage_then_exit; ;;
+
+		#Handle the case where an argument or flag was called that the program does not recognise.
+		#This should prefix the 'usage' text with the reason the program failed.
+		#The 'Standard Error' file descriptor is used to separate failure output or log messages from actual program output.
+		*) printf "\nUnrecognised argument $1. ">&2; print_usage_then_exit; ;;
+
 	esac
-done
+done;
 
 if [ -n "$MAC_ADDRESS_SOURCE" ]; then
 	$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS --address "$MAC_ADDRESS_SOURCE";
 	case $? in
 		0) ;;
-		1) echo "$0; source mac address is invalid." >&2;						exit 2; ;;
-		*) echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\"" >&2;  exit 3; ;;
+		1) printf "$0; source mac address is invalid.\n">&2; exit 2; ;;
+		*) printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\"\n">&2; exit 3; ;;
 	esac
 
 	$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE --address "$MAC_ADDRESS_SOURCE"
 	case $? in
 		1) ;;
-		0) echo "$0; source mac address is not permitted." >&2; 									    exit 2; ;;
-		*) echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" produced incorrect output" >&2; exit 3; ;;
+		0) printf "$0; source mac address is not permitted.\n">&2; exit 2; ;;
+		*) printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" produced incorrect output\n">&2; exit 3; ;;
 	esac
 fi
 
@@ -119,8 +178,8 @@ if [ -n "$PROBED_ADDRESS" ]; then
 	$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS --address "$PROBED_ADDRESS"
 	case $? in
 		0) ;;
-		1) echo "$0: the ipv4 address you supplied was invalid. Try: X.X.X.X where X is a number from 0-255">&2; 		  exit 2; ;;
-		*) echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" produced incorrect output.">&2; exit 3; ;;
+		1) printf "$0: the ipv4 address you supplied was invalid. Try: X.X.X.X where X is a number from 0-255\n">&2; exit 2; ;;
+		*) printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" produced incorrect output.\n">&2; exit 3; ;;
 	esac
 
 	TO_PROBE="$PROBED_ADDRESS";
@@ -130,46 +189,46 @@ if [ -n "$PROBED_NETWORK" ]; then
 	$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK --address "$PROBED_NETWORK"
 	case $? in
 		0) ;;
-		1) echo "$0: the ipv4 network you supplied was not an address or network in CIDR form.">&2; 				  exit 2; ;;
-		*) echo "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" produced incorrect output.">&2; exit 3; ;;
+		1) printf "$0: the ipv4 network you supplied was not an address or network in CIDR form.\n">&2; exit 2; ;;
+		*) printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" produced incorrect output.\n">&2; exit 3; ;;
 	esac
 
 	TO_PROBE="$PROBED_NETWORK";
 fi
 
-echo "\t#Hardware Type (1 = Ethernet)"
-echo "\t\tarp htype 1 \\";
+printf "\\t#Hardware Type (1 = Ethernet)\n";
+printf "\\t\\tarp htype 1 \\\\\n";
 
-echo "\t#Hardware Length (6 = MAC segment count)"
-echo "\t\tarp hlen 6 \\";
+printf "\\t#Hardware Length (6 = MAC segment count)\n";
+printf "\\t\\tarp hlen 6 \\\\\n";
 
-echo "\t#Protocol Type (0x0800 = 'IPV4' ethertype";
-echo "\t\tarp ptype 0x0800 \\";
+printf "\\t#Protocol Type (0x0800 = 'IPV4' ethertype\n";
+printf "\\t\\tarp ptype 0x0800 \\\\\n";
 
-echo "\t#Protocol Length (4 = IPV4 segment count)"
-echo "\t\tarp plen 4 \\";
+printf "\\t#Protocol Length (4 = IPV4 segment count)\n";
+printf "\\t\\tarp plen 4 \\\\\n";
 
-echo "\t#Operation code (1 = request)"
-echo "\t\tarp operation 1 \\";
+printf "\\t#Operation code (1 = request)\n";
+printf "\\t\\tarp operation 1 \\\\\n";
 
-echo "\t#ARP source MAC - who is asking";
+printf "\\t#ARP source MAC - who is asking\n";
 if [ -n "$MAC_ADDRESS_SOURCE" ]; then
-	echo "\t\tarp saddr ether $MAC_ADDRESS_SOURCE \\";
+	printf "\\t\\tarp saddr ether $MAC_ADDRESS_SOURCE \\\\\n";
 else
-	echo "\t\t#arp saddr ether unknown - please consider the security implications";
+	printf "\\t\\t#arp saddr ether unknown - please consider the security implications\n";
 fi
 
-echo "\t#ARP destination mac - who to ask (unknown in a 'probe')";
-echo "\t\tarp daddr ether 00:00:00:00:00:00 \\";
+printf "\\t#ARP destination mac - who to ask (unknown in a 'probe')\n";
+printf "\\t\\tarp daddr ether 00:00:00:00:00:00 \\\\\n";
 
-echo "\t#ARP source ip address - who is asking (not yet assigned in a 'probe')";
-echo "\t\tarp saddr ip 0.0.0.0 \\";
+printf "\\t#ARP source ip address - who is asking (not yet assigned in a 'probe')\n";
+printf "\\t\\tarp saddr ip 0.0.0.0 \\\\\n";
 
-echo "\t#ARP destination ip address - who to ask (for their mac address)";
+printf "\\t#ARP destination ip address - who to ask (for their mac address)\n";
 if [ -n "$TO_PROBE" ]; then
-	echo "\t\tarp daddr ip $TO_PROBE \\";
+	printf "\\t\\tarp daddr ip $TO_PROBE \\\\\n";
 else
-	echo "\t\t#arp daddr ip unknown - please consider the security implications";
+	printf "\\t\\t#arp daddr ip unknown - please consider the security implications\n";
 fi
 
 exit 0;
