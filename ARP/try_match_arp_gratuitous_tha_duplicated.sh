@@ -27,7 +27,7 @@ if [ ! -x $DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK ]; then
 	exit 3;
 fi
 
-print_usage_then_exit () {
+print_usage () {
 	printf "Usage: $0 <arguments>\n">&2;
 	printf " Optional: --source-mac-address XX:XX:XX:XX:XX:XX (where X is a-f, or A-F, or 0-9: hexadecimal)\n">&2;
 	printf " Note: it is strongly recommended to supply a source MAC address.\n">&2;
@@ -43,10 +43,28 @@ print_usage_then_exit () {
 	printf " Optional: --only-validate\n">&2;
 	printf " Note: this causes the program to exit after validating parameters.\n">&2;
 	printf "\n">&2;
+}
+
+print_usage_then_exit () {
+	print_usage;
 	exit 2;
 }
 
 if [ "$1" = "-h" ]; then print_usage_then_exit; fi
+
+describe_script () {
+	printf "$0: a script to match a packet where the content indicates it is likely a \"Gratuitous ARP\" packet; where the target hardware address is duplicated in the 'arp ether saddr' and 'arp ether daddr' fields.\n">&2;
+	printf "\n">&2;
+}
+
+describe_script_then_exit () {
+	describe_script;
+	exit 2;
+}
+
+if [ "$1" = "-e" ]; then describe_script_then_exit; fi
+
+if [ "$1" = "-eh" ]; then describe_script; print_usage; exit 2; fi
 
 MAC_ADDRESS_SOURCE="";
 REQUESTED_ADDRESS="";
@@ -111,8 +129,8 @@ if [ $SKIP_VALIDATE -eq 1 ] && [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 if [ $SKIP_VALIDATE -eq 0 ]; then
 
 	if [ -n "$REQUESTED_ADDRESS" ] && [ -n "$REQUESTED_NETWORK" ]; then
-		printf "$0: address claim is ambiguous; you cannot supply both an address and a network.\n">&2;
-		exit 2;
+		printf "\nAddress claim is ambiguous; you cannot supply both an address and a network.\n\n">&2;
+		print_usage_then_exit;
 	fi
 
 	if [ -n "$MAC_ADDRESS_SOURCE" ]; then
