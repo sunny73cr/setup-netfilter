@@ -102,6 +102,8 @@ PROBED_ADDRESS="";
 PROBED_NETWORK="";
 
 #FLAGS:
+SKIP_VALIDATION=0;
+ONLY_VALIDATION=1;
 
 while true; do
 	case $1 in
@@ -144,6 +146,16 @@ while true; do
 			fi
 		;;
 
+		--skip-validation)
+			SKIP_VALIDATION=1;
+			shift 1;
+		;;
+
+		--only-validation)
+			ONLY_VALIDATION=1;
+			shift 1;
+		;;
+
 		#Handle the case of 'end' of arg parsing; where all flags are shifted from the list,
 		#or the program was called without any parameters. exit the arg parsing loop.
 		"") break; ;;
@@ -156,43 +168,54 @@ while true; do
 	esac
 done;
 
-if [ -n "$MAC_ADDRESS_SOURCE" ]; then
-	$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS --address "$MAC_ADDRESS_SOURCE";
-	case $? in
-		0) ;;
-		1) printf "$0; source mac address is invalid.\n">&2; exit 2; ;;
-		*) printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\"\n">&2; exit 3; ;;
-	esac
+#WHy, user?
+if [ $SKIP_VALIDATION -eq 1 ] && [ $ONLY_VALIDATION -eq 1 ]; then exit 0; fi
 
-	$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE --address "$MAC_ADDRESS_SOURCE"
-	case $? in
-		1) ;;
-		0) printf "$0; source mac address is not permitted.\n">&2; exit 2; ;;
-		*) printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" produced incorrect output\n">&2; exit 3; ;;
-	esac
+if [ $SKIP_VALIDATION -eq 0 ]; then
+	if [ -n "$MAC_ADDRESS_SOURCE" ]; then
+		$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS --address "$MAC_ADDRESS_SOURCE";
+		case $? in
+			0) ;;
+			1) printf "$0; source mac address is invalid.\n">&2; exit 2; ;;
+			*) printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\"\n">&2; exit 3; ;;
+		esac
+
+		$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE --address "$MAC_ADDRESS_SOURCE"
+		case $? in
+			1) ;;
+			0) printf "$0; source mac address is not permitted.\n">&2; exit 2; ;;
+			*) printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" produced incorrect output\n">&2; exit 3; ;;
+		esac
+	fi
+
+	if [ -n "$PROBED_ADDRESS" ]; then
+		$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS --address "$PROBED_ADDRESS"
+		case $? in
+			0) ;;
+			1) printf "$0: the ipv4 address you supplied was invalid. Try: X.X.X.X where X is a number from 0-255\n">&2; exit 2; ;;
+			*) printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" produced incorrect output.\n">&2; exit 3; ;;
+		esac
+	fi
+
+	if [ -n "$PROBED_NETWORK" ]; then
+		$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK --address "$PROBED_NETWORK"
+		case $? in
+			0) ;;
+			1) printf "$0: the ipv4 network you supplied was not an address or network in CIDR form.\n">&2; exit 2; ;;
+			*) printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" produced incorrect output.\n">&2; exit 3; ;;
+		esac
+	fi
 fi
 
-TO_PROBE="":
+if [ $ONLY_VALIADTION -eq 1 ]; then exit 0; fi
+
+TO_PROBE="";
 
 if [ -n "$PROBED_ADDRESS" ]; then
-	$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS --address "$PROBED_ADDRESS"
-	case $? in
-		0) ;;
-		1) printf "$0: the ipv4 address you supplied was invalid. Try: X.X.X.X where X is a number from 0-255\n">&2; exit 2; ;;
-		*) printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" produced incorrect output.\n">&2; exit 3; ;;
-	esac
-
 	TO_PROBE="$PROBED_ADDRESS";
 fi
 
 if [ -n "$PROBED_NETWORK" ]; then
-	$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK --address "$PROBED_NETWORK"
-	case $? in
-		0) ;;
-		1) printf "$0: the ipv4 network you supplied was not an address or network in CIDR form.\n">&2; exit 2; ;;
-		*) printf "$0; script dependency failure: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" produced incorrect output.\n">&2; exit 3; ;;
-	esac
-
 	TO_PROBE="$PROBED_NETWORK";
 fi
 
