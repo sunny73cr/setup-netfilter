@@ -8,22 +8,22 @@ DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/chec
 DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_network_is_valid.sh";
 
 if [ ! -x $DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS ]; then
-	printf "$0; dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\" is missing or is not executable.\n">&2;
+	printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
 if [ ! -x $DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE ]; then
-	printf "$0; dependency: \"$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" is missing or is not executable.\n">&2;
+	printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
 if [ ! -x $DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS ]; then
-	printf "$0; dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" is missing or is not executable.\n">&2;
+	printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
 if [ ! -x $DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK ]; then
-	printf "$0; dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" is missing or is not executable.\n">&2;
+	printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
@@ -84,7 +84,7 @@ print_usage() {
 	printf " Optional: --skip-validation\n">&2;
 	printf " Note: this causes the program to skip validating inputs (if you know they are valid.)\n">&2;
 	printf "\n">&2;
-	printf " Optional: --only-validation\n">&2;
+	printf " Optional: --only-validate\n">&2;
 	printf " Note: this causes the program to exit after validating inputs.\n">&2;
 	printf "\n">&2;
 }
@@ -105,10 +105,16 @@ REQUESTED_NETWORK="";
 
 #FLAGS:
 SKIP_VALIDATION=0;
-ONLY_VALIDATION=0;
+ONLY_VALIDATE=0;
 
 while true; do
 	case $1 in
+		#Approach to parsing arguments:
+		#If the length of 'all arguments' is less than 2 (shift reduces this number),
+		#since this is an argument parameter and requires a value; the program cannot continue.
+		#Else, if the argument was provided, and its 'value' is empty; the program cannot continue.
+		#Else, assign the argument, and shift 2 (both the argument indicator and its value / move next)
+
 		--source-mac-address)
 			#not enough arguments
 			if [ $# -lt 2 ]; then
@@ -148,13 +154,17 @@ while true; do
 			fi
 		;;
 
+		#Approach to parsing flags:
+		#If the flag was provided, toggle on its value; then move next
+		#Or shift 1 / remove the flag from the list
+
 		--skip-validation)
 			SKIP_VALIDATION=1;
 			shift 1;
 		;;
 
-		--only-validation)
-			ONLY_VALIDATION=1;
+		--only-validate)
+			ONLY_VALIDATE=1;
 			shift 1;
 		;;
 
@@ -171,7 +181,7 @@ while true; do
 done;
 
 #Why, user?
-if [ $SKIP_VALIDATION -eq 1 ] && [ $ONLY_VALIDATION -eq 1 ]; then exit 0; fi
+if [ $SKIP_VALIDATION -eq 1 ] && [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
 if [ $SKIP_VALIDATION -eq 0 ]; then
 
@@ -185,14 +195,14 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		case $? in
 			0) ;;
 			1) printf "\nInvalid --source-mac-address. " >&2; print_usage_then_exit; ;;
-			*) printf "$0; dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\" produced incorrect output\n" >&2; exit 3; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_MAC_ADDRESS\" produced incorrect output\n" >&2; exit 3; ;;
 		esac
 
 		$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE --address "$SOURCE_MAC_ADDRESS"
 		case $? in
 			1) ;;
 			0) printf "\nInvalid --source-mac-address (banned). " >&2; print_usage_then_exit; ;;
-			*) printf "$0; dependency: \"$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" produced incorrect output\n" >&2; exit 3; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" produced incorrect output\n" >&2; exit 3; ;;
 		esac
 	fi
 
@@ -201,7 +211,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		case $? in
 			0) ;;
 			1) printf "\nInvalid --requested-address. ">&2; print_usage_then_exit; ;;
-			*) printf "$0; dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" produced incorrect output.\n">&2; exit 3; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_ADDRESS\" produced incorrect output.\n">&2; exit 3; ;;
 		esac
 	fi
 
@@ -210,12 +220,12 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		case $? in
 			0) ;;
 			1) printf "\nInvalid --requested-network. ">&2; print_usage_then_exit; ;;
-			*) printf "$0; dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" produced incorrect output.\n">&2; exit 3; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK\" produced incorrect output.\n">&2; exit 3; ;;
 		esac
 	fi
 fi
 
-if [ $ONLY_VALIDATION -eq 1 ]; then exit 0; fi
+if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
 TO_PROBE="";
 
