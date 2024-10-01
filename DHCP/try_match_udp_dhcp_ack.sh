@@ -77,8 +77,7 @@ print_usage() {
 	printf "  Note: it is strongly recommended to supply both a server and client address.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --dhcp-service-uid X (where X is 1-65535)\n">&2;
-	printf "  Note: it is strongly recommended to supply a service 'socket' user id.\n">&2;
-	printf "  Note: this relates to an entry in the /etc/passwd file. It is the user id of a designated DHCP client or server program.\n">&2;
+	printf " Note: it is stronly recommended to supply the user ID that is assigned to the DHCP server 'service' listed in the /etc/passwd file.">&2;
 	printf "  Note: without this restriction, DHCP Ack packets are permitted to any program.\n";
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
