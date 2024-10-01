@@ -22,7 +22,7 @@ if [ ! -x $SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID ]; then
 fi
 
 print_description() {
-	printf "A program that performs a function.\n">&2;
+	printf "A program that prints part of an NFT rule 'match' section. The match intends to identify # packets.\n">&2;
 }
 
 print_description_then_exit() {
