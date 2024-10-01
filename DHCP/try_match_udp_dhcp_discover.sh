@@ -67,7 +67,7 @@ print_usage() {
 	printf "">&2;
 	printf " Optional: --dhcp-service-uid X (where X is 1-65535)">&2;
 	printf " Note: It is strongly recommended to supply the user ID that is assigned to the DHCP server 'service' listed in the /etc/passwd file.";
-	printf " Note: without this restriction, DHCP ACK packets are permitted to any program."
+	printf " Note: without this restriction, DHCP Discover packets are permitted to any program."
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
 	printf " Note: enabling this flag causes the program to skip validating inputs (if you know they are valid.)\n">&2;
