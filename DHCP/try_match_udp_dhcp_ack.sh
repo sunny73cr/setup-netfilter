@@ -22,7 +22,7 @@ if [ ! -x $SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID ]; then
 fi
 
 print_description() {
-	printf "A program that prints part of an NFT rule 'match' section. The match intends to identify # packets.\n">&2;
+	printf "A program that prints part of an NFT rule 'match' section. The match intends to identify DHCP Ack packets.\n">&2;
 }
 
 print_description_then_exit() {
@@ -79,7 +79,7 @@ print_usage() {
 	printf " Optional: --dhcp-service-uid X (where X is 1-65535)\n">&2;
 	printf "  Note: it is strongly recommended to supply a service 'socket' user id.\n">&2;
 	printf "  Note: this relates to an entry in the /etc/passwd file. It is the user id of a designated DHCP client or server program.\n">&2;
-	printf "  Note: without this restriction, DHCPACK packets are permitted to any program.\n";
+	printf "  Note: without this restriction, DHCP Ack packets are permitted to any program.\n";
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
 	printf "  Note: causes the program to skip validating inputs (if you know they are valid).\n">&2;
