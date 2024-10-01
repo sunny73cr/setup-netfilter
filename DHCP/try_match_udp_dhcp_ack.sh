@@ -199,7 +199,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID --address $CLIENT_MAC_ADDRESS
 		case $? in
 			0) ;;
-			1) printf "\nInvalid MAC address. \n">&2; print_usage_then_exit; ;;
+			1) printf "\nInvalid --client-mac-address. \n">&2; print_usage_then_exit; ;;
 			*) printf "$0: dependency: \"$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced a failure exit code.\n">&2; exit 3; ;;
 		esac
 	fi
@@ -208,7 +208,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address $SERVER_IPV4_ADDRESS
 		case $? in
 			0) ;;
-			1) printf "\nInvalid IPV4 address. \n">&2; print_usage_then_exit; ;;
+			1) printf "\nInvalid --server-address-ipv4. \n">&2; print_usage_then_exit; ;;
 			*) printf "$0: dependency: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n">&2; exit 3; ;;
 		esac
 	fi
@@ -217,21 +217,21 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		printf "$0: I cannot assume that you intend to allow a bound/renew/rebind DHCPACK; please retry with the flag --client-is-reusing-ipv4-address enabled.\n">&2;
 		printf "$0: Alternatively, please omit the $ALLOCATED_IPV4_ADDRESS.\n">&2;
 		printf "$0: Please refer to RFC2131 and RFC2132 for more information.\n">&2;
-		exit 2;
+		print_usage_then_exit;
 	fi
 
 	if [ $CLIENT_IS_REUSING_IPV4_ADDRESS -eq 1 ] && [ -z "$ALLOCATED_IPV4_ADDRESS" ]; then
 		printf "$0: If you intend to allow a bound/renew/rebind DHCPACK; please retry and supply an 'allocated' IPV4 address/network you allow the server to issue.\n">&2;
 		printf "$0: Alternatively, please omit the --client-is-reusing-ipv4-address-enabled flag.\n">&2;
 		printf "$0: Please refer to RFC2131 and RFC2132 for more information.\n">&2;
-		exit 2;
+		print_usage_then_exit;
 	fi
 
 	if [ -n "$ALLOCATED_IPV4_ADDRESS" ]; then
 		$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address $ALLOCATED_IPV4_ADDRESS;
 		case $? in
 			0) ;;
-			1) printf "\nInvalid 'allocated to client' IPV4 address. \n">&2; print_usage_then_exit; ;;
+			1) printf "\nInvalid --allocated-address-ipv4. \n">&2; print_usage_then_exit; ;;
 			*) printf "$0: dependency: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n">&2; exit 3; ;;
 		esac
 	fi
@@ -240,7 +240,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID --id $SERVICE_USER_ID
 		case $? in
 			0) ;;
-			1) printf "\nInvalid 'service' user ID. (confirm the /etc/passwd entry). \n">&2; print_usage_then_exit; ;;
+			1) printf "\nInvalid --dhcp-service-uid. (confirm the /etc/passwd entry). \n">&2; print_usage_then_exit; ;;
 			*) printf "$0: dependency: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n">&2; exit 3; ;;
 		esac
 	fi
