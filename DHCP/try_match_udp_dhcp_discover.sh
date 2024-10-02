@@ -208,7 +208,7 @@ printf "\\t\\t@ih,64,16 0 \\\\\n";
 printf "\\t#Flags: broadcast flag is enabled for DHCPDISCOVER\n";
 printf "\\t\\t@ih,80,1 1 \\\\\\\n";
 
-printf "\\t#Followed by 15 zeroes. These must be zeroes as they are reserved for future use.\n":
+printf "\\t#Followed by 15 zeroes. These must be zeroes as they are reserved for future use.\n";
 printf "\\t#These bits are ignored by servers and relay agents.\n";
 printf "\\t\\t@ih,81,15 0 \\\\\\\n";
 
