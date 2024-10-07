@@ -83,16 +83,16 @@ print_usage() {
 	printf "   If the directory does not exist, the directory itself and all missing parent directories will be created.\n">&2;
 	printf "   If the --destination-directory argument is not provided; it defaults to the current working directory.\n">&2;
 	printf "\n">&2;
+	printf "  Optional: --directory-permissions string (The linux-style octal triplet for controlling permissions over the directory. eg. 755).\n">&2;
+	printf "   The linux-style octal triplet contains a sum of the values 0, 1, 2, or 4. 1 for write, 2 for execute, 4 for read. The triplet indicates permissions for the directory Owner, then the Group, then 'all Other' users.\n">&2;
+	printf "   Note: if this parameter is omitted, the default permissions are defined by your system configuration.\n">&2;
+	printf "\n">&2;
 	printf "  Required: --file-name string (the name of the script to create (include the extension)).\n">&2;
 	printf "   The file name. Must adhere to the usual linux file name restrictions. Please don't include any newline characters, and spaces are preffered to be avoided. \n">&2;
 	printf "\n">&2;
-	printf "  Optional: --directory-permissions string (The linux-style octal triplet for controlling permissions over the directory. eg. 755).\n">&2;
-	printf "   The linux-style octal triplet contains a sum of the values 0, 1, 2, or 4. 1 for write, 2 for execute, 4 for read. The triplet indicates permissions for the directory Owner, then the Group, then 'all Other' users.\n">&2;
-	printf "   Note: the default permissions are: 755, or 'read, write, execute' for the Owner; 'read, execute' for the Group; and 'read, execute' for 'all Other' users.\n">&2;
-	printf "\n">&2;
 	printf "  Optional: --file-permissions string (The linux-style octal triplet for controlling permissions over the file. eg. 755).\n">&2;
 	printf "   The linux-style octal triplet contains a sum of the values 0, 1, 2, or 4. 1 for write, 2 for execute, 4 for read. The triplet indicates permissions for the file Owner, then the Group, then 'all Other' users.\n">&2;
-	printf "   Note: the default permissions are: 755, or 'read, write, execute' for the Owner; 'read, execute' for the Group; and 'read, execute' for 'all Other' users.\n">&2;
+	printf "   Note: if this parameter is omitted, the default permissions are defined by your system configuration.\n">&2;
 	printf "\n">&2;
 	printf "  Optional: --no-clobber.\n">&2;
 	printf "   Presence of this flag in the case that the file already exists, will cause the program to exit with a code of '4' (environmental error).\n">&2;
@@ -221,7 +221,7 @@ if [ -n "$DESTINATION_DIRECTORY" ]; then
 
 			mkdir -p -m $DIRECTORY_PERMISSIONS $DESTINATION_DIRECTORY;
 		else
-			mkdir -p -m 755 $DESTINATION_DIRECTORY;
+			mkdir -p $DESTINATION_DIRECTORY;
 		fi
 	fi
 else
@@ -236,21 +236,19 @@ fi
 
 FILE_PATH=$(echo "$DESTINATION_DIRECTORY/$FILE_NAME" | sed 's/\/\//\//g');
 
-if [ $NO_CLOBBER -eq 1 ]; then
-	if [ -f "$FILE_PATH" ]; then
+if [ -f "$FILE_PATH" ]; then
+	if [ $NO_CLOBBER -eq 1 ]; then
 		printf "$0: A file exists at that location, and the --no-clobber flag was enabled: cannot overwrite the file.\n">&2;
 		exit 4;
+	else
+		rm "$FILE_PATH";
 	fi
-else
-	rm "$FILE_PATH";
 fi
 
 touch "$FILE_PATH";
 
 if [ -n "$FILE_PERMISSIONS" ]; then
 	chmod $FILE_PERMISSIONS "$FILE_PATH";
-else
-	chmod 755 "$FILE_PATH";
 fi
 
 printf "#!/bin/sh\n\n" >> "$FILE_PATH";
@@ -276,11 +274,20 @@ CMD_BUILD_SCRIPT_ARGUMENT_PARSING="$DEPENDENCY_PATH_BUILD_SCRIPT_ARGUMENT_PARSIN
 
 #If needed, append arguments.
 if [ -n "$ARGUMENTS" ]; then
+	if [ -z "$(echo $ARGUMENTS | grep ',')" ]; then
+		printf "\nThe value for the arguments parameter must be a comma (,) separated list. ">&2;
+		print_usage_then_exit;
+	fi
+
 	CMD_BUILD_SCRIPT_ARGUMENT_PARSING="$CMD_BUILD_SCRIPT_ARGUMENT_PARSING --arguments $ARGUMENTS";
 fi
 
 #If needed, append flags.
 if [ -n "$FLAGS" ]; then
+	if [ -z "$(echo $FLAGS | grep ',')" ]; then
+		printf "\nThe value for the flags parameter must be a comma (,) separated list. ">&2;
+		print_usage_then_exit;
+	fi
 	CMD_BUILD_SCRIPT_ARGUMENT_PARSING="$CMD_BUILD_SCRIPT_ARGUMENT_PARSING --flags $FLAGS";
 fi
 
