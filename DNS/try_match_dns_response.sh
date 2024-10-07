@@ -220,7 +220,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		$DEPENDENCY_PATH_VALIDATE_SERVICE_ID --service-user-id $DNS_SERVICE_ID;
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --dns-service-id. "; print_usage_then_exit; ;;
+			1) printf "\nInvalid --dns-service-uid. "; print_usage_then_exit; ;;
 			*) printf "$0: dependency \"$DEPENDENCY_PATH_VALIDATE_SERVICE_ID\" produced a failure exit code."; exit 4; ;;
 		esac
 	fi
