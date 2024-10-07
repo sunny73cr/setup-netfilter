@@ -2,10 +2,10 @@
 
 if [ -z "$ENV_SETUP_NFT" ]; then printf "setup-netfilter: set ENV_SETUP_NFT to the root path of the setup-netfilter directory before continuing.\n">&2; exit 4; fi
 
-DEPENDENCY_PATH_SCRIPT_NAME="$ENV_SETUP_NFT/path_to_script.sh";
+DEPENDENCY_PATH_VALIDATE_SERVICE_ID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_service_user_id_is_valid.sh";
 
-if [ ! -x $DEPENDENCY_PATH_SCRIPT_NAME ]; then
-	printf "$0: dependency: \"$DEPENDENCY_PATH_NAME\" is missing or is not executable.\n">&2;
+if [ ! -x $DEPENDENCY_PATH_VALIDATE_SERVICE_ID ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_SERVICE_ID\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
@@ -150,6 +150,15 @@ done;
 if [ $SKIP_VALIDATION -eq 1 ] && [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
 if [ $SKIP_VALIDATION -eq 0 ]; then
+	if [ -n "$DNS_SERVICE_ID" ]; then
+		$DEPENDENCY_PATH_VALIDATE_SERVICE_ID --service-user-id $DNS_SERVICE_ID;
+		case $? in
+			0) ;;
+			1) printf "\nInvalid --dns-service-uid. "; print_usage_then_exit; ;;
+			*) printf "$0: dependency \"$DEPENDENCY_PATH_VALIDATE_SERVICE_ID\" produced a failure exit code. "; exit 4; ;;
+		esac
+	fi
+
 	case $IS_RECRUSION_DESIRED in
 		-1) ;;
 		yes) ;;
