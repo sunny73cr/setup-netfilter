@@ -251,7 +251,7 @@ if [ -f "$FILE_PATH" ]; then
 		exit 4;
 	fi
 
-	if [ $OVERWRITE -eq 1 ];
+	if [ $OVERWRITE -eq 1 ]; then
 		rm "$FILE_PATH";
 	fi
 fi
