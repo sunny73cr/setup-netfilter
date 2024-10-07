@@ -274,20 +274,11 @@ CMD_BUILD_SCRIPT_ARGUMENT_PARSING="$DEPENDENCY_PATH_BUILD_SCRIPT_ARGUMENT_PARSIN
 
 #If needed, append arguments.
 if [ -n "$ARGUMENTS" ]; then
-	if [ -z "$(echo $ARGUMENTS | grep ',')" ]; then
-		printf "\nThe value for the arguments parameter must be a comma (,) separated list. ">&2;
-		print_usage_then_exit;
-	fi
-
 	CMD_BUILD_SCRIPT_ARGUMENT_PARSING="$CMD_BUILD_SCRIPT_ARGUMENT_PARSING --arguments $ARGUMENTS";
 fi
 
 #If needed, append flags.
 if [ -n "$FLAGS" ]; then
-	if [ -z "$(echo $FLAGS | grep ',')" ]; then
-		printf "\nThe value for the flags parameter must be a comma (,) separated list. ">&2;
-		print_usage_then_exit;
-	fi
 	CMD_BUILD_SCRIPT_ARGUMENT_PARSING="$CMD_BUILD_SCRIPT_ARGUMENT_PARSING --flags $FLAGS";
 fi
 
