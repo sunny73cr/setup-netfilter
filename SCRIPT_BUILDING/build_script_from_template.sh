@@ -95,8 +95,11 @@ print_usage() {
 	printf "   Note: if this parameter is omitted, the default permissions are defined by your system configuration.\n">&2;
 	printf "\n">&2;
 	printf "  Optional: --no-clobber.\n">&2;
-	printf "   Presence of this flag in the case that the file already exists, will cause the program to exit with a code of '4' (environmental error).\n">&2;
-	printf "   \"Don't bash (clobber) my scripts over their head resulting in their removal.\"\n">&2;
+	printf "   Presence of this flag causes the program to exit with a code of '4' (environmental error) where a file exists with that name.\n">&2;
+	printf "   \"Don't bash (clobber) my scripts over their head resulting in their change or removal.\"\n">&2;
+	printf "\n">&2;
+	printf "  Optional: --overwrite.\n">&2;
+	printf "   Presence of this flag causes the program to delete any existing files.\n">&2;
 	printf "\n">&2;
 }
 
@@ -116,6 +119,7 @@ FILE_NAME="";
 
 #FLAGS:
 NO_CLOBBER=0;
+OVERWRITE=0;
 
 while true; do
 	case $1 in
@@ -190,6 +194,11 @@ while true; do
 			shift 1;
 		;;
 
+		--overwrite)
+			OVERWRITE=1;
+			shift 1;
+		;;
+
 		#Handle the case of 'end' of arg parsing; where all flags are shifted from the list,
 		#or the program was called without any parameters. exit the arg parsing loop.
 		"") break; ;;
@@ -240,7 +249,9 @@ if [ -f "$FILE_PATH" ]; then
 	if [ $NO_CLOBBER -eq 1 ]; then
 		printf "$0: A file exists at that location, and the --no-clobber flag was enabled: cannot overwrite the file.\n">&2;
 		exit 4;
-	else
+	fi
+
+	if [ $OVERWRITE -eq 1 ];
 		rm "$FILE_PATH";
 	fi
 fi
