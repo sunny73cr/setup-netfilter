@@ -22,7 +22,6 @@ if [ "$1" = "-e" ]; then print_description_then_exit; fi
 
 print_dependencies() {
 	printf "printf\n">&2;
-	printf "echo\n">&2;
 	printf "\n">&2;
 }
 
