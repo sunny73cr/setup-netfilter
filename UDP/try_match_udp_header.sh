@@ -10,7 +10,7 @@ if [ ! -x $DEPENDENCY_PATH_VALIDATE_PORT ]; then
 fi
 
 print_description() {
-	printf "A program that performs a function.\n">&2;
+	printf "A program that prints part of an NFT rule 'match' section. The match intends to identify UDP headers.\n">&2;
 }
 
 print_description_then_exit() {
@@ -23,6 +23,8 @@ if [ "$1" = "-e" ]; then print_description_then_exit; fi
 print_dependencies() {
 	printf "printf\n">&2;
 	printf "echo\n">&2;
+	printf "grep\n">&2;
+	printf "cut\n">&2;
 	printf "\n">&2;
 }
 
