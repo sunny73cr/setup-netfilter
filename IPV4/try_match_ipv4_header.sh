@@ -2,10 +2,10 @@
 
 if [ -z "$ENV_SETUP_NFT" ]; then printf "setup-netfilter: set ENV_SETUP_NFT to the root path of the setup-netfilter directory before continuing.\n">&2; exit 4; fi
 
-DEPENDENCY_PATH_VALIDATE_LAYER_4_PROTOCOL="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_layer_4_protocol_id_is_valid.sh";
+DEPENDENCY_PATH_VALIDATE_LAYER_4_PROTOCOL_ID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_layer_4_protocol_id_is_valid.sh";
 
-if [ ! -x $DEPENDENCY_PATH_VALIDATE_LAYER_4_PROTOCOL ]; then
-	echo "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_LAYER_4_PROTOCOL\" is missing or is not executable.";
+if [ ! -x $DEPENDENCY_PATH_VALIDATE_LAYER_4_PROTOCOL_ID ]; then
+	echo "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_LAYER_4_PROTOCOL_ID\" is missing or is not executable.";
 	exit 3;
 fi
 
@@ -23,7 +23,7 @@ if [ ! -x $DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK ]; then
 	exit 3;
 fi
 
-DEPENDENCY_PATH_VALIDATE_DIFFERENTIATED_SERVICES_CODE="$ENV_SETUP_NFT/check_differentiated_services_code_is_valid.sh";
+DEPENDENCY_PATH_VALIDATE_DIFFERENTIATED_SERVICES_CODE="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_differentiated_services_code_is_valid.sh";
 
 if [ ! -x $DEPENDENCY_PATH_VALIDATE_DIFFERENTIATED_SERVICES_CODE ]; then
 	printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_DIFFERENTIATED_SERVICES_CODE\" is missing or is not executable.\n">&2;
@@ -190,8 +190,8 @@ if [ "$1" = "-h" ]; then print_usage_then_exit; fi
 if [ "$1" = "-ehd" ]; then print_description; printf "\n">&2; print_dependencies; printf "\n">&2; print_usage; exit 2; fi
 
 #ARGUMENTS:
-OFFSET_MARKER="";
-OFFSET_HEADER_BEGIN=-1;
+OFFSET_MARKER="nh";
+OFFSET_HEADER_BEGIN=0;
 LAYER_4_PROTOCOL_ID="";
 SOURCE_ADDRESS_IPV4="";
 DESTINATION_ADDRESS_IPV4="";
@@ -736,21 +736,23 @@ printf "\\t\\t@$OFFSET_MARKER,$OFFSET_VERSION,4 4 \\\\\n";
 printf "\\t\\t#Confirm IHL is 5 (32-bit words) in length / no \"options\" are present.\n";
 printf "\\t\\t@$OFFSET_MARKER,$OFFSET_IHL,4 5 \\\\\n";
 
-printf "\\t\\t#Confirm DSCP value\n";
 if [ -n "$DIFF_SERV_CODE" ]; then
+	printf "\\t\\t#Confirm DSCP value\n";
 	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_DIFF_SERV_CODE,6 $DIFF_SERV_CODE \\\\\n";
 else
 	printf "\\t\\t#Differentiated Services Code Point is unrestricted\n";
 fi
 
-printf "\\t\\t#Confirm Congestion Notification\n";
 if [ -n "$CONGESTION_NOTIFICATION" ]; then
+	printf "\\t\\t#Confirm Congestion Notification\n";
 	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_CONGESTION_NOTIFICATION,2 $CONGESTION_NOTIFICATION \\\\\n";
 else
 	printf "\\t\\t#Congestion Notification (ECN-Capable / Congestion Experience bits) are unrestricted\n";
 fi
 
-printf "\\t\\t#Confirm Length\n";
+if [ -n "$LENGTH" ] || [ -n "$LENGTH_MIN" ] || [ -n "$LENGTH_MAX" ]; then
+	printf "\\t\\t#Confirm Length\n";
+fi
 if [ -n "$LENGTH" ]; then
 	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_LENGTH,16 $LENGTH \\\\\n";
 fi
@@ -764,43 +766,43 @@ if [ -z "$LENGTH" ] && [ -z "$LENGTH_MIN" ] && [ -z "$LENGTH_MAX" ]; then
 	printf "\\t\\t#Length is unrestricted - consider the security implications\n";
 fi
 
-printf "\\t\\t#Confirm Identification\n";
 if [ -n "$IDENTIFICATION" ]; then
+	printf "\\t\\t#Confirm Identification\n";
 	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_IDENTIFICATION,16 $IDENTIFICATION \\\\\n";
 else
 	printf "\\t\\t#Identification is unrestricted\n";
 fi
 
-printf "\\t\\t#Confirm Flags\n";
 if [ -n "$FLAGS" ]; then
+	printf "\\t\\t#Confirm Flags\n";
 	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_FLAGS,3 $FLAGS \\\\\n";
 else
 	printf "\\t\\t#Dont/More Fragments Flags are unrestricted\n";
 fi
 
-printf "\\t\\t#Confirm Fragment Offset\n";
 if [ -n "$FRAG_OFFSET" ]; then
+	printf "\\t\\t#Confirm Fragment Offset\n";
 	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_FRAG_OFFSET,13 $FRAG_OFFSET \\\\\n";
 else
 	printf "\\t\\t#Fragment Offset is unrestricted\n";
 fi
 
-printf "\\t\\t#Confirm TTL\n";
 if [ -n "$TTL" ]; then
+	printf "\\t\\t#Confirm Time To Live\n";
 	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_TTL,8 $TTL \\\\\n";
 else
 	printf "\\t\\t#Time To Live is unrestricted\n";
 fi
 
-printf "\\t\\t#Confirm Layer 4 Protocol ID\n";
 if [ -n "$LAYER_4_PROTOCOL_ID" ]; then
+	printf "\\t\\t#Confirm Layer 4 Protocol ID\n";
 	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_LAYER_4_PROTOCOL_ID,8 $LAYER_4_PROTOCOL_ID \\\\\n";
 else
 	printf "\\t\\t#Layer 4 Protocol ID is unrestricted - consider the security implications\n";
 fi
 
-printf "\\t\\t#Confirm Header Checksum\n";
 if [ -n "$HEADER_CHECKSUM" ]; then
+	printf "\\t\\t#Confirm Header Checksum\n";
 	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_HEADER_CHECKSUM,16 $HEADER_CHECKSUM \\\\\n";
 else
 	printf "\\t\\t#Header Checksum is unrestricted\n";
@@ -808,7 +810,7 @@ fi
 
 if [ -n "$SOURCE_ADDRESS_IPV4" ]; then
 	printf "\\t\\t#Confirm Source Host Address\n";
-	printf "\\t\\t@OFFSET_MARKER,$OFFSET_SOURCE_HOST_ID,32 $SOURCE_ADDRESS_IPV4 \\\\\n";
+	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_SOURCE_HOST_ID,32 $SOURCE_ADDRESS_IPV4 \\\\\n";
 fi
 
 if [ -n "$SOURCE_NETWORK_IPV4" ]; then
@@ -837,13 +839,17 @@ if [ -n "$SOURCE_NETWORK_IPV4" ]; then
 	esac
 
 	printf "\\t\\t#Confirm Source Host Address is in range.\n";
-	printf "\\t\\t@OFFSET_MARKER,$OFFSET_SOURCE_HOST_ID,32 >= $SOURCE_BASE_ADDRESS_IPV4_DECIMAL \\\\\n";
-	printf "\\t\\t@OFFSET_MARKER,$OFFSET_SOURCE_HOST_ID,32 <= $SOURCE_END_ADDRESS_IPV4_DECIMAL \\\\\n";
+	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_SOURCE_HOST_ID,32 >= $SOURCE_BASE_ADDRESS_IPV4_DECIMAL \\\\\n";
+	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_SOURCE_HOST_ID,32 <= $SOURCE_END_ADDRESS_IPV4_DECIMAL \\\\\n";
+fi
+
+if [ -z "$SOURCE_ADDRESS_IPV4" ] && [ -z "$SOURCE_NETWORK_IPV4" ]; then
+	printf "\\t\\t#Source Address is unrestricted - consider the security implications.\n";
 fi
 
 if [ -n "$DESTINATION_ADDRESS_IPV4" ]; then
 	printf "\\t\\t#Confirm Source Host Address\n";
-	printf "\\t\\t@OFFSET_MARKER,$OFFSET_DESTINATION_HOST_ID,32 $DESTINATION_ADDRESS_IPV4 \\\\\n";
+	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_DESTINATION_HOST_ID,32 $DESTINATION_ADDRESS_IPV4 \\\\\n";
 fi
 
 if [ -n "$DESTINATION_NETWORK_IPV4" ]; then
@@ -872,8 +878,12 @@ if [ -n "$DESTINATION_NETWORK_IPV4" ]; then
 	esac
 
 	printf "\\t\\t#Confirm Destination Host Address is in range.\n";
-	printf "\\t\\t@OFFSET_MARKER,$OFFSET_DESTINATION_HOST_ID,32 >= $DESTINATION_BASE_ADDRESS_IPV4_DECIMAL \\\\\n";
-	printf "\\t\\t@OFFSET_MARKER,$OFFSET_DESTINATION_HOST_ID,32 <= $DESTINATION_END_ADDRESS_IPV4_DECIMAL \\\\\n";
+	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_DESTINATION_HOST_ID,32 >= $DESTINATION_BASE_ADDRESS_IPV4_DECIMAL \\\\\n";
+	printf "\\t\\t@$OFFSET_MARKER,$OFFSET_DESTINATION_HOST_ID,32 <= $DESTINATION_END_ADDRESS_IPV4_DECIMAL \\\\\n";
+fi
+
+if [ -z "$DESTINATION_ADDRESS_IPV4" ] && [ -z "$DESTINATION_NETWORK_IPV4" ]; then
+	printf "\\t\\t#Destination Address is unrestricted - consider the security implications.\n";
 fi
 
 exit 0;
