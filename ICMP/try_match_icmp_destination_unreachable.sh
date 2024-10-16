@@ -248,12 +248,12 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		fi
 	fi
 
-	if [ -z "$LENGTH" ] && [ -z "$LENGTH_MIN" ]; then
+	if [ -n "$LENGTH" ] && [ -n "$LENGTH_MIN" ]; then
 		printf "\nInvalid --length and --length-min (you cannot combine these arguments). ">&2;
 		print_usage_then_exit;
 	fi
 
-	if [ -z "$LENGTH" ] && [ -z "$LENGTH_MAX" ]; then
+	if [ -n "$LENGTH" ] && [ -n "$LENGTH_MAX" ]; then
 		printf "\nInvalid --length and --length-max (you cannot combine these arguments). ">&2;
 		print_usage_then_exit;
 	fi
