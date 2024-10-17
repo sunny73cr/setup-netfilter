@@ -242,7 +242,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 			print_usage_then_exit;
 		fi
 
-		if [ $CHECKSUM -gt 15 ]; then
+		if [ $CHECKSUM -gt 65535 ]; then
 			printf "\nInvalid --checksum (must be less than 65536). ">&2;
 			print_usage_then_exit;
 		fi
@@ -269,7 +269,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 			print_usage_then_exit;
 		fi
 
-		if [ $LENGTH -gt 15 ]; then
+		if [ $LENGTH -gt 65535 ]; then
 			printf "\nInvalid --length (must be less than 65536). ">&2;
 			print_usage_then_exit;
 		fi
@@ -286,7 +286,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 			print_usage_then_exit;
 		fi
 
-		if [ $LENGTH_MIN -gt 15 ]; then
+		if [ $LENGTH_MIN -gt 65535 ]; then
 			printf "\nInvalid --length-min (must be less than 65536). ">&2;
 			print_usage_then_exit;
 		fi
@@ -303,7 +303,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 			print_usage_then_exit;
 		fi
 
-		if [ $LENGTH_MAX -gt 15 ]; then
+		if [ $LENGTH_MAX -gt 65535 ]; then
 			printf "\nInvalid --length-max (must be less than 65536). ">&2;
 			print_usage_then_exit;
 		fi
@@ -330,7 +330,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 			print_usage_then_exit;
 		fi
 
-		if [ $NEXT_HOP_MTU -gt 15 ]; then
+		if [ $NEXT_HOP_MTU -gt 65535 ]; then
 			printf "\nInvalid --next-hop-mtu (must be less than 65536). ">&2;
 			print_usage_then_exit;
 		fi
