@@ -28,7 +28,7 @@ if [ ! -x $DEPENDENCY_SCRIPT_PATH_VALIDATE_IPV4_NETWORK ]; then
 fi
 
 print_description() {
-	printf "A program that performs a function.\n">&2;
+	printf "A program that prints a portion of an NFT rule match section. The match identifies ARP Gratuitous Requests, where the Target Hardware Address is Zero\n">&2;
 }
 
 print_description_then_exit() {
@@ -53,10 +53,10 @@ if [ "$1" = "-d" ]; then print_dependencies_then_exit; fi
 print_usage() {
 	printf "Usage: $0 <parameters>\n">&2;
 	printf "Flags used by themselves: \n">&2;
-	printf "-e (prints an explanation of the functions' purpose) (exit code 2)\n">&2;
-	printf "-h (prints an explanation of the functions' available parameters, and their effect) (exit code 2)\n">&2;
-	printf "-d (prints the functions' dependencies: newline delimited list) (exit code 2)\n">&2
-	printf "-ehd (prints the above three) (exit code 2)\n">&2;
+	printf " -e (prints an explanation of the functions' purpose) (exit code 2)\n">&2;
+	printf " -h (prints an explanation of the functions' available parameters, and their effect) (exit code 2)\n">&2;
+	printf " -d (prints the functions' dependencies: newline delimited list) (exit code 2)\n">&2
+	printf " -ehd (prints the above three) (exit code 2)\n">&2;
 	printf "\n">&2;
 	printf "Parameters:\n">&2;
 	printf "\n">&2;
