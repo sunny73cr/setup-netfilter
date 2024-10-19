@@ -2,28 +2,64 @@
 
 if [ -z "$ENV_SETUP_NFT" ]; then printf "setup-netfilter: set ENV_SETUP_NFT to the root path of the setup-netfilter directory before continuing.\n">&2; exit 4; fi
 
-DEPENDENCY_SCRIPT_PATH_CHECK_MAC_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_is_valid.sh";
-DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
-DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_network_is_valid.sh";
+DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_is_valid.sh";
 
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_CHECK_MAC_ADDRESS_IS_VALID" ]; then
-	printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_MAC_ADDRESS_IS_VALID\" is missing or is not executable.\n">&2;
+if [ ! -x $DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID" ]; then
-	printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" is missing or is not executable.\n">&2;
+DEPENDENCY_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_source_is_banned.sh";
+
+if [ ! -x $DEPENDENCY_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
-if [ ! -x "$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID" ]; then
-	printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID\" is missing or is not executable.\n">&2;
+DEPENDENCY_PATH_IS_MAC_ADDRESS_BANNED_AS_DESTINATION="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_destination_is_banned.sh";
+
+if [ ! -x $DEPENDENCY_PATH_IS_MAC_ADDRESS_BANNED_AS_DESTINATION ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_IS_MAC_ADDRESS_BANNED_AS_DESTINATION\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
+DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
+
+if [ ! -x $DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS\" is missing or is not executable.\n">&2;
+	exit 3;
+fi
+
+DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_network_is_valid.sh";
+
+if [ ! -x $DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK\" is missing or is not executable.\n">&2;
+	exit 3;
+fi
+
+DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/convert_cidr_network_to_base_address.sh";
+
+if [ ! -x $DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\" is missing or is not executable.\n">&2;
+	exit 3;
+fi
+
+DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/convert_cidr_network_to_end_address.sh";
+
+if [ ! -x $DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS\" is missing or is not executable.\n">&2;
+	exit 3;
+fi
+
+DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL="$ENV_SETUP_NFT/SCRIPT_HELPERS/convert_ipv4_address_to_decimal_number.sh";
+
+if [ ! -x $DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" is missing or is not executable.\n">&2;
+	exit 3;
+fi
 
 print_description() {
-	printf "A program that prints a part of an NFT rule match section. This match identifies ARP Reply packets.\n">&2;
+	printf "A program that prints a portion of an NFT rule match section. The match identifies ARP Gratuitous Requests, where the Target Hardware Address is Duplicated.\n">&2;
 }
 
 print_description_then_exit() {
@@ -36,6 +72,14 @@ if [ "$1" = "-e" ]; then print_description_then_exit; fi
 print_dependencies() {
 	printf "Dependencies: \n">&2;
 	printf "printf\n">&2;
+	printf "$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS\n">&2;
+	printf "$DEPENDENCY_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\n">&2;
+	printf "$DEPENDENCY_PATH_IS_MAC_ADDRESS_BANNED_AS_DESTINATION\n">&2;
+	printf "$DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS\n">&2;
+	printf "$DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK\n">&2;
+	printf "$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\n">&2;
+	printf "$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS\n">&2;
+	printf "$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\n">&2;
 	printf "\n">&2;
 }
 
@@ -56,24 +100,51 @@ print_usage() {
 	printf "\n">&2;
 	printf "Parameters:\n">&2;
 	printf "\n">&2;
-	printf " Optional: --source-address-mac XX:XX:XX:XX:XX:XX (where X is a-f, or A-F, or 0-9; hexadecimal.)\n">&2;
-	printf " Optional: --destination-address-mac XX:XX:XX:XX:XX:XX (where X is a-f, or A-F, or 0-9; hexadecimal.)\n">&2;
-	printf " Note: It is strongly recommended to supply a source or destination MAC Address\n">&2;
+	printf " Optional: --hardware-address-type x (where x is 0-65535)\n">&2;
+	printf "  Note: if --hardware-address-type is not provided, the default is 1 (Ethernet)\n">&2;
 	printf "\n">&2;
-	printf " Optional: --source-address-ipv4 X.X.X.X (where X is 0-255)\n">&2;
-	printf " Optional: --source-network-ipv4 X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
-	printf " Note: It is strongly reccomended to supply a source ipv4 address or network.\n">&2;
+	printf " Optional: --hardware-address-length x (where x is 0-255)\n">&2;
+	printf "  Note: if --hardware-address-length is not provided, the default is 6 (6 bytes for a MAC address)\n">&2;
 	printf "\n">&2;
-	printf " Optional: --destination-address-ipv4 X.X.X.X (where X is 0-255)\n">&2;
-	printf " Optional: --destination-network-ipv4 X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;;
-	printf " Note: It is strongly reccomended to supply a destination ipv4 address or network.\n">&2;
+	printf " Optional: --protocol-address-type x (where x is 0-65535)\n">&2;
+	printf "  Note: if --protocol-address-type is not provided, the default is 0x800 (IPV4 Address)\n">&2;
+	printf "\n">&2;
+	printf " Optional: --protocol-address-length x (where x is 0-255)\n">&2;
+	printf "  Note: if --protocol-address-length is not provided, the default is 4 (4 bytes for an IPV4 address)\n">&2;
+	printf "\n">&2;
+	printf " Optional: --source-mac-address XX:XX:XX:XX:XX:XX (where X is a-f, or A-F, or 0-9: hexadecimal)\n">&2;
+	printf "  Note: the hardware address of the peer that is replying to the destination MAC / IP pair\n">&2;
+	printf "\n">&2;
+	printf " Optional: --source-ipv4-address X.X.X.X (where X is 0-255)\n">&2
+	printf "  Note: the ipv4 address owned by the peer (MAC address) that is replying to the destination MAC / IP pair\n">&2;
+	printf "\n">&2;
+	printf " Optional: --source-ipv4-network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
+	printf "  Note: a contiguous block of IPV4 addresses that could be owned by the peer (MAC address) that is replying to the destinaiton MAC / IP Pair\n">&2;
+	printf "\n">&2;
+	printf " Note: the arguments --source-ipv4-address and --source-ipv4-network cannot be combined.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --destination-mac-address XX:XX:XX:XX:XX:XX (where x is a-f, A-F, or 0--9: hexadecimal)\n">&2;
+	printf "  Note: the hardware address of the peer that is being replied to.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --destination-ipv4-address X.X.X.X (where X is 0-255)\n">&2
+	printf "  Note: the ipv4 address of the peer that is being replied to.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --destination-ipv4-network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
+	printf "  Note: a contiguous block of IPV4 addresses that can be replied to.\n">&2;
+	printf "\n">&2;
+	printf " Note: the arguments --destination-ipv4-address and --destination-ipv4-network cannot be combined.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
-	printf " Note: enabling this flag causes the program to skip validation (if you know the inputs are valid).\n">&2;
+	printf " Note: this causes the program to skip parameter validation (if you know they are valid)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --only-validate\n">&2;
-	printf " Note: enabling this flag causes the program to exit after validating inputs.\n">&2;
+	printf " Note: this causes the program to exit after validating parameters.\n">&2;
 	printf "\n">&2;
+}
+
+print_usage_then_exit() {
+	print_usage;
+	exit 2;
 }
 
 if [ "$1" = "-h" ]; then print_usage_then_exit; fi
@@ -81,10 +152,14 @@ if [ "$1" = "-h" ]; then print_usage_then_exit; fi
 if [ "$1" = "-ehd" ]; then print_description; printf "\n">&2; print_dependencies; printf "\n">&2; print_usage; exit 2; fi
 
 #ARGUMENTS:
-SOURCE_MAC_ADDRESS="";
-DESTINATION_MAC_ADDRESS="";
+HARDWARE_ADDRESS_TYPE="";
+HARDWARE_ADDRESS_LENGTH="";
+PROTOCOL_ADDRESS_TYPE="";
+PROTOCOL_ADDRESS_LENGTH="";
+MAC_ADDRESS_SOURCE="";
 SOURCE_IPV4_ADDRESS="";
 SOURCE_IPV4_NETWORK="";
+MAC_ADDRESS_DESTINATION="";
 DESTINATION_IPV4_ADDRESS="";
 DESTINATION_IPV4_NETWORK="";
 
@@ -100,34 +175,73 @@ while true; do
 		#Else, if the argument was provided, and its 'value' is empty; the program cannot continue.
 		#Else, assign the argument, and shift 2 (both the argument indicator and its value / move next)
 
-		--source-address-mac)
-			#not enough arguments
+		--hardware-address-type)
+			#not enough argynents
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			#the value is empty
 			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
-				SOURCE_MAC_ADDRESS=$2;
+				HARDWARE_ADDRESS_TYPE=$2;
 				shift 2;
 			fi
 		;;
 
-		--destination-address-mac)
-			#not enough arguments
+		--hardware-address-length)
+			#not enough argynents
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			#the value is empty
 			elif [ "$2" = "" ]; then
 				print_usage_then_exit;
 			else
-				DESTINATION_MAC_ADDRESS=$2;
+				HARDWARE_ADDRESS_LENGTH=$2;
 				shift 2;
 			fi
 		;;
 
-		--source-address-ipv4)
-			#not enough arguments
+		--protocol-address-type)
+			#not enough argynents
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			#the value is empty
+			elif [ "$2" = "" ]; then
+				print_usage_then_exit;
+			else
+				PROTOCOL_ADDRESS_TYPE=$2;
+				shift 2;
+			fi
+		;;
+
+		--protocol-address-length)
+			#not enough argynents
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			#the value is empty
+			elif [ "$2" = "" ]; then
+				print_usage_then_exit;
+			else
+				PROTOCOL_ADDRESS_LENGTH=$2;
+				shift 2;
+			fi
+		;;
+
+		--source-mac-address)
+			#not enough argynents
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			#the value is empty
+			elif [ "$2" = "" ]; then
+				print_usage_then_exit;
+			else
+				MAC_ADDRESS_SOURCE=$2;
+				shift 2;
+			fi
+		;;
+
+		--source-ipv4-address)
+			#not enough argynents
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			#the value is empty
@@ -139,8 +253,8 @@ while true; do
 			fi
 		;;
 
-		--source-network-ipv4)
-			#not enough arguments
+		--source-ipv4-network)
+			#not enough argynents
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			#the value is empty
@@ -152,8 +266,21 @@ while true; do
 			fi
 		;;
 
-		--destination-address-ipv4)
-			#not enough arguments
+		--destination-mac-address)
+			#not enough argynents
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			#the value is empty
+			elif [ "$2" = "" ]; then
+				print_usage_then_exit;
+			else
+				MAC_ADDRESS_DESTINATION=$2;
+				shift 2;
+			fi
+		;;
+
+		--destination-ipv4-address)
+			#not enough argynents
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			#the value is empty
@@ -165,8 +292,8 @@ while true; do
 			fi
 		;;
 
-		--destination-network-ipv4)
-			#not enough arguments
+		--destination-ipv4-network)
+			#not enough argynents
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			#the value is empty
@@ -192,6 +319,7 @@ while true; do
 			shift 1;
 		;;
 
+
 		#Handle the case of 'end' of arg parsing; where all flags are shifted from the list,
 		#or the program was called without any parameters. exit the arg parsing loop.
 		"") break; ;;
@@ -208,112 +336,348 @@ done;
 if [ $SKIP_VALIDATION -eq 1 ] && [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
 if [ $SKIP_VALIDATION -eq 0 ]; then
+	if [ -n "$HARDWARE_ADDRESS_TYPE" ]; then
+		if [ -z "$(echo $HARDWARE_ADDRESS_TYPE | grep '[0-9]{1,5}')" ]; then
+			printf "\nInvalid --hardware-address-type (must be a 1-5 digit number). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $HARDWARE_ADDRESS_TYPE -lt 0 ]; then
+			printf "\nInvalid --hardware-address-type (must be 0 or greater). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $HARDWARE_ADDRESS_TYPE -gt 65535 ]; then
+			printf "\nInvalid --hardware-address-type (must be less than 65536). ">&2;
+			print_usage_then_exit;
+		fi
+	fi
+
+	if [ -n "$HARDWARE_ADDRESS_LENGTH" ]; then
+		if [ -z "$(echo $HARDWARE_ADDRESS_LENGTH | grep '[0-9]{1,3}')" ]; then
+			printf "\nInvalid --hardware-address-length (must be a 1-3 digit number). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $HARDWARE_ADDRESS_LENGTH -lt 0 ]; then
+			printf "\nInvalid --hardware-address-length (must be 0 or greater). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $HARDWARE_ADDRESS_LENGTH -gt 255 ]; then
+			printf "\nInvalid --hardware-address-length (must be less than 256). ">&2;
+			print_usage_then_exit;
+		fi
+	fi
+
+	if [ -n "$PROTOCOL_ADDRESS_TYPE" ]; then
+		if [ -z "$(echo $PROTOCOL_ADDRESS_TYPE | grep '[0-9]{1,5}')" ]; then
+			printf "\nInvalid --protocol-address-type (must be a 1-5 digit number). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $PROTOCOL_ADDRESS_TYPE -lt 0 ]; then
+			printf "\nInvalid --protocol-address-type (must be 0 or greater). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $PROTOCOL_ADDRESS_TYPE -gt 65535 ]; then
+			printf "\nInvalid --protocol-address-type (must be less than 65536). ">&2;
+			print_usage_then_exit;
+		fi
+	fi
+
+	if [ -n "$PROTOCOL_ADDRESS_LENGTH" ]; then
+		if [ -z "$(echo $PROTOCOL_ADDRESS_LENGTH | grep '[0-9]{1,3}')" ]; then
+			printf "\nInvalid --protocol-address-length (must be a 1-3 digit number). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $PROTOCOL_ADDRESS_LENGTH -lt 0 ]; then
+			printf "\nInvalid --protocol-address-length (must be 0 or greater). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $PROTOCOL_ADDRESS_LENGTH -gt 255 ]; then
+			printf "\nInvalid --protocol-address-length (must be less than 256). ">&2;
+			print_usage_then_exit;
+		fi
+	fi
+
 	if [ -n "$MAC_ADDRESS_SOURCE" ]; then
-		$DEPENDENCY_SCRIPT_PATH_CHECK_MAC_ADDRESS_IS_VALID --address "$MAC_ADDRESS_SOURCE";
+		$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS --address "$MAC_ADDRESS_SOURCE";
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --source-mac-address. ">&2; print_usage_then_exit; ;;
-			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced incorrect output.\n">&2; exit 3; ;;
+			1) printf "\nInvalid --source-mac-address. " >&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS\" produced a failure exit code ($?).\n" >&2; exit 3; ;;
+		esac
+
+		$DEPENDENCY_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE --address "$MAC_ADDRESS_SOURCE"
+		case $? in
+			1) ;;
+			0) printf "\nBanned --source-mac-address. " >&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_IS_MAC_ADDRESS_BANNED_AS_SOURCE\" produced a failure exit code ($?).\n" >&2; exit 3; ;;
 		esac
 	fi
 
-	if [ -n "$DESTINATION_ADDRESS_MAC" ]; then
-		$DEPENDENCY_SCRIPT_PATH_CHECK_MAC_ADDRESS_IS_VALID --address "$DESTINATION_ADDRESS_MAC";
+	if [ -n "$SOURCE_IPV4_ADDRESS" ] && [ -n "$SOURCE_IPV4_NETWORK" ]; then
+		printf "\nInvalid combination of --source-ipv4-address and --source-ipv4-network. ">&2;
+		print_usage_then_exit;
+	fi
+
+	if [ -n "$SOURCE_IPV4_ADDRESS" ]; then
+		$DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS --address "$SOURCE_IPV4_ADDRESS"
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --destination-mac-address. ">&2; print_usage_then_exit; ;;
-			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced incorrect output.\n">&2; exit 3; ;;
+			1) printf "\nInvalid --source-ipv4-address. ">&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS\" produced a failure exit code ($?).\n">&2; exit 3; ;;
 		esac
 	fi
 
-	if [ -n "$SOURCE_ADDRESS_IPV4" ]; then
-		$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address "$SOURCE_ADDRESS_IPV4";
+	if [ -n "$SOURCE_IPV4_NETWORK" ]; then
+		$DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK --network "$SOURCE_IPV4_NETWORK"
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --source-address-ipv4. ">&2; print_usage_then_exit; ;;
-			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced incorrect output.\n">&2; exit 3; ;;
+			1) printf "\nInvalid --source-ipv4-network. ">&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK\" produced a failure exit code ($?).\n">&2; exit 3; ;;
 		esac
 	fi
 
-	if [ -n "$SOURCE_NETWORK_IPV4" ]; then
-		$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID --network "$SOURCE_NETWORK_IPV4";
+	if [ -n "$MAC_ADDRESS_DESTINATION" ]; then
+		$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS --address "$MAC_ADDRESS_DESTINATION";
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --source-network-ipv4. ">&2; print_usage_then_exit; ;;
-			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID\" produced incorrect output.\n">&2; exit 3; ;;
+			1) printf "\nInvalid --destination-mac-address. " >&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS\" produced a failure exit code ($?).\n" >&2; exit 3; ;;
+		esac
+
+		$DEPENDENCY_PATH_IS_MAC_ADDRESS_BANNED_AS_DESTINATION --address "$MAC_ADDRESS_DESTINATION"
+		case $? in
+			1) ;;
+			0) printf "\nBanned --destination-mac-address. " >&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_IS_MAC_ADDRESS_BANNED_AS_DESTINATION\" produced a failure exit code ($?).\n" >&2; exit 3; ;;
 		esac
 	fi
 
-	if [ -n "$DESTINATION_ADDRESS_IPV4" ]; then
-		$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address "$DESTINATION_ADDRESS_IPV4";
+	if [ -n "$DESTINATION_IPV4_ADDRESS" ] && [ -n "$DESTINATION_IPV4_NETWORK" ]; then
+		printf "\nInvalid combination of --destination-ipv4-address and --destination-ipv4-network. ">&2;
+		print_usage_then_exit;
+	fi
+
+	if [ -n "$DESTINATION_IPV4_ADDRESS" ]; then
+		$DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS --address "$DESTINATION_IPV4_ADDRESS"
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --destination-address-ipv4. ">&2; print_usage_then_exit; ;;
-			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced incorrect output.\n">&2; exit 3; ;;
+			1) printf "\nInvalid --destination-ipv4-address. ">&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS\" produced a failure exit code ($?).\n">&2; exit 3; ;;
 		esac
 	fi
 
-	if [ -n "$DESTINATION_NETWORK_IPV4" ]; then
-		$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID --network "$DESTINATION_NETWORK_IPV4";
+	if [ -n "$DESTINATION_IPV4_NETWORK" ]; then
+		$DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK --network "$DESTINATION_IPV4_NETWORK"
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --destination-network-ipv4. ">&2; print_usage_then_exit; ;;
-			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_CHECK_IPV4_NETWORK_IS_VALID\" produced incorrect output.\n">&2; exit 3; ;;
+			1) printf "\nInvalid --destination-ipv4-network. ">&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK\" produced a failure exit code ($?).\n">&2; exit 3; ;;
 		esac
 	fi
 fi
 
 if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
-printf "\\t#Hardware Ethernet (1 = Ethernet)\n";
-printf "\\t\\tarp htype 1 \\\\\n";
+#assign defaults
 
-printf "\\t#Hardware Length (6 = MAC address segment count)\n";
-printf "\\t\\tarp hlen 6 \\\\\n";
-
-printf "\\t#Protocol Type (0x0800 = IPV4 ethertype)\n";
-printf "\\t\\tarp ptype 0x0800 \\\\\n";
-
-printf "\\t#Protocol Length (4 = IPV4 address segment length)\n";
-printf "\\t\\tarp plen 4 \\\\\n";
-
-printf "\\t#ARP OP Code (2 = reply)\n";
-printf "\\t\\tarp operation 2 \\\\\n";
-
-printf "\\t#Source MAC address - who is replying to a probe.\n";
-if [ -n "$SOURCE_MAC_ADDRESS" ]; then
-	printf "arp saddr ether $MAC_ADDRESS_SOURCE \\\\\n";
-else
-	printf "\\t\\t#arp saddr ether unknown - please consider the security implications\n";
+if [ -z "$HARDWARE_ADDRESS_TYPE" ]; then
+	HARDWARE_ADDRESS_TYPE=1;
 fi
 
-printf "\\t#Destination MAC address - who is replying to a probe.\n";
-if [ -n "$DESTINATION_ADDRESS_MAC" ]; then
-	printf "arp daddr ether $DESTINATION_ADDRESS_MAC \\\\\n";
-else
-	printf "\\t\\t#arp daddr ether unknown - please consider the security implications\n";
+if [ -z "$HARDWARE_ADDRESS_LENGTH" ]; then
+	HARDWARE_ADDRESS_LENGTH=6;
 fi
 
-printf "\\t#ARP source ip address - who is replying to a probe.\n";
-if [ -n "$SOURCE_ADDRESS_IPV4" ]; then
-	printf "\\t\\tarp saddr ip $SOURCE_ADDRESS_IPV4 \\\\\n":
-
-elif [ -n "$SOURCE_NETWORK_IPV4" ]
-	printf "\\t\\tarp saddr ip $SOURCE_NETWORK_IPV4 \\\\\n";
-
-else
-	printf "\\t\\t#arp saddr ip unknown - please consider the security implications\n";
+if [ -z "$PROTOCOL_ADDRESS_TYPE" ]; then
+	PROTOCOL_ADDRESS_TYPE=0x0800;
 fi
 
-printf "\\t#ARP destination ip address - who is being informed of the IP's owner (hardware address)\n";
-if [ -n "$DESTINATION_ADDRESS_IPV4" ]; then
-	printf "\\t\\tarp daddr ip $DESTINATION_ADDRESS_IPV4 \\\\\n":
+if [ -z "$PROTOCOL_ADDRESS_LENGTH" ]; then
+	PROTOCOL_ADDRESS_LENGTH=4;
+fi
 
-elif [ -n "$DESTINATION_NETWORK_IPV4" ]
-	printf "\\t\\tarp daddr ip $DESTINATION_NETWORK_IPV4 \\\\\n";
+#nft expects a raw hexadecimal value with a 0x prefix; format the mac address
+MAC_ADDRESS_SOURCE_CLEANED="";
+if [ -n "$MAC_ADDRESS_SOURCE" ]; then
+	MAC_ADDRESS_SOURCE_NO_COLONS=$(echo $MAC_ADDRESS_SOURCE | sed 's/://g');
+	MAC_ADDRESS_SOURCE_CLEANED="0x$MAC_ADDRESS_SOURCE_NO_COLONS";
+fi
 
+#nft expects a raw hexadecimal value with a 0x prefix; format the mac address
+MAC_ADDRESS_DESTINATION_CLEANED="";
+if [ -n "$MAC_ADDRESS_DESTINATION" ]; then
+	MAC_ADDRESS_DESTINATION_NO_COLONS=$(echo $MAC_ADDRESS_DESTINATION | sed 's/://g');
+	MAC_ADDRESS_DESTINATION_CLEANED="0x$MAC_ADDRESS_DESTINATION_NO_COLONS";
+fi
+
+SOURCE_IPV4_ADDRESS_DECIMAL="";
+if [ -n "$SOURCE_IPV4_ADDRESS" ]; then
+	SOURCE_IPV4_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $SOURCE_IPV4_ADDRESS);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+	esac
+fi
+
+#find the base and end address of the supplied IPV4 network, and convert them to decimal
+#this allows for matching what is in the packet to a range of decimal numbers that correlate to addresses
+SOURCE_IPV4_NETWORK_BASE_ADDRESS="";
+SOURCE_IPV4_NETWORK_BASE_ADDRESS_DECIMAL="";
+SOURCE_IPV4_NETWORK_END_ADDRESS="";
+SOURCE_IPV4_NETWORK_END_ADDRESS_DECIMAL="";
+if [ -n "$SOURCE_IPV4_NETWORK" ]; then
+	SOURCE_IPV4_NETWORK_BASE_ADDRESS=$($DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS --network $SOURCE_IPV4_NETWORK);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+	esac
+
+	SOURCE_IPV4_NETWORK_BASE_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $SOURCE_IPV4_NETWORK_BASE_ADDRESS);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+	esac
+
+	SOURCE_IPV4_NETWORK_END_ADDRESS=$($DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS --network $SOURCE_IPV4_NETWORK);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+	esac
+
+	SOURCE_IPV4_NETWORK_END_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $SOURCE_IPV4_NETWORK_END_ADDRESS);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+	esac
+fi
+
+DESTINATION_IPV4_ADDRESS_DECIMAL="";
+if [ -n "$DESTINATION_IPV4_ADDRESS" ]; then
+	DESTINATION_IPV4_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $DESTINATION_IPV4_ADDRESS);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+	esac
+fi
+
+#find the base and end address of the supplied IPV4 network, and convert them to decimal
+#this allows for matching what is in the packet to a range of decimal numbers that correlate to addresses
+DESTINATION_IPV4_NETWORK_BASE_ADDRESS="";
+DESTINATION_IPV4_NETWORK_BASE_ADDRESS_DECIMAL="";
+DESTINATION_IPV4_NETWORK_END_ADDRESS="";
+DESTINATION_IPV4_NETWORK_END_ADDRESS_DECIMAL="";
+if [ -n "$DESTINATION_IPV4_NETWORK" ]; then
+	DESTINATION_IPV4_NETWORK_BASE_ADDRESS=$($DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS --network $DESTINATION_IPV4_NETWORK);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+	esac
+
+	DESTINATION_IPV4_NETWORK_BASE_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $DESTINATION_IPV4_NETWORK_BASE_ADDRESS);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+	esac
+
+	DESTINATION_IPV4_NETWORK_END_ADDRESS=$($DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS --network $DESTINATION_IPV4_NETWORK);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+	esac
+
+	DESTINATION_IPV4_NETWORK_END_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $DESTINATION_IPV4_NETWORK_END_ADDRESS);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+	esac
+fi
+
+OFFSET_MARKER="ll";
+#LinkLayer Offset / Ethernet Header Offset + Ethernet Header Length = 144
+BIT_OFFSET_ARP_HARDWARE_ADDRESS_TYPE=144;
+BIT_OFFSET_ARP_PROTOCOL_ADDRESS_TYPE=$(($BIT_OFFSET_ARP_HARDWARE_ADDRESS_TYPE+16));
+BIT_OFFSET_ARP_HARDWARE_ADDRESS_LENGTH=$(($BIT_OFFSET_ARP_PROTOCOL_ADDRESS_TYPE+16));
+BIT_OFFSET_ARP_PROTOCOL_ADDRESS_LENGTH=$(($BIT_OFFSET_ARP_HARDWARE_ADDRESS_LENGTH+8));
+BIT_OFFSET_ARP_OPERATION=$(($BIT_OFFSET_ARP_PROTOCOL_ADDRESS_LENGTH+8));
+BIT_OFFSET_ARP_SENDING_HARDWARE_ADDRESS=$(($BIT_OFFSET_ARP_OPERATION+16));
+BIT_OFFSET_ARP_SENDING_PROTOCOL_ADDRESS=$(($BIT_OFFSET_ARP_SENDING_HARDWARE_ADDRESS+48));
+BIT_OFFSET_ARP_TARGET_HARDWARE_ADDRESS=$(($BIT_OFFSET_ARP_SENDING_PROTOCOL_ADDRESS+32));
+BIT_OFFSET_ARP_TARGET_PROTOCOL_ADDRESS=$(($BIT_OFFSET_ARP_TARGET_HARDWARE_ADDRESS+48));
+
+printf "\\t#Match Hardware Type (1 = Ethernet)\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_HARDWARE_ADDRESS_TYPE,16 $HARDWARE_ADDRESS_TYPE \\\\\n";
+
+printf "\\t#Match Protocol Type (0x0800 = IPV4 ethertype)\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_PROTOCOL_ADDRESS_TYPE,16 $PROTOCOL_ADDRESS_TYPE \\\\\n";
+
+printf "\\t#Match Hardware Length (6 = MAC address segment count)\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_HARDWARE_ADDRESS_LENGTH,8 $HARDWARE_ADDRESS_LENGTH \\\\\n";
+
+printf "\\t#Match Protocol Length (4 = IPV4 address segment count)\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_PROTOCOL_ADDRESS_LENGTH,8 $PROTOCOL_ADDRESS_LENGTH \\\\\n";
+
+printf "\\t#Match ARP OP Code (1 = request)\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_OPERATION,16 1 \\\\\n";
+
+if [ -n "$MAC_ADDRESS_SOURCE" ]; then
+	printf "\\t#Match Sending Hardware Address - who is informing their peers\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_SENDING_HARDWARE_ADDRESS,48 $MAC_ADDRESS_SOURCE_CLEANED \\\\\n";
 else
-	printf "\\t\\t#arp daddr ip unknown - please consider the security implications\n";
+	printf "\\t\\t#ARP Sending Hardware Address unrestricted - please consider the security implications\n";
+fi
+
+if [ -n "$SOURCE_IPV4_ADDRESS" ] || [ -n "$SOURCE_IPV4_NETWORK" ]; then
+	printf "\\t#Match Sending Protocol Address - who is informing their peers\n";
+fi
+
+if [ -n "$SOURCE_IPV4_ADDRESS" ]; then
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_SENDING_PROTOCOL_ADDRESS,32 $SOURCE_IPV4_ADDRESS_DECIMAL \\\\\n";
+fi
+
+if [ -n "$SOURCE_IPV4_NETWORK_BASE_ADDRESS_DECIMAL" ]; then
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_SENDING_PROTOCOL_ADDRESS,32 >= $SOURCE_IPV4_NETWORK_BASE_ADDRESS_DECIMAL \\\\\n";
+fi
+
+if [ -n "$SOURCE_IPV4_NETWORK_END_ADDRESS_DECIMAL" ]; then
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_SENDING_PROTOCOL_ADDRESS,32 <= $SOURCE_IPV4_NETWORK_END_ADDRESS_DECIMAL \\\\\n";
+fi
+
+if [ -z "SOURCE_IPV4_ADDRESS" ] && [ -z "$SOURCE_IPV4_NETWORK" ]; then
+	printf "\\t\\t#ARP Sending Protocol address unrestricted - consider the security implications.\n";
+fi
+
+if [ -n "$MAC_ADDRESS_DESTINATION_CLEANED" ]; then
+	printf "\\t#Match Target Hardware Address - who is informing their peers\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_TARGET_HARDWARE_ADDRESS,48 $MAC_ADDRESS_DESTINATION_CLEANED \\\\\n";
+else
+	printf "\\t\\t#ARP Target Hardware Address unrestricted - please consider the security implications\n";
+fi
+
+if [ -n "$DESTINATION_IPV4_ADDRESS" ] || [ -n "$DESTINATION_IPV4_NETWORK" ]; then
+	printf "\\t#Match Target Protocol Address - who is informing their peers\n";
+fi
+
+if [ -n "$DESTINATION_IPV4_ADDRESS_DECIMAL" ]; then
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_TARGET_PROTOCOL_ADDRESS,32 $DESTINATION_IPV4_ADDRESS_DECIMAL \\\\\n";
+fi
+
+if [ -n "$DESTINATION_IPV4_NETWORK_BASE_ADDRESS_DECIMAL" ]; then
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_TARGET_PROTOCOL_ADDRESS,32 >= $DESTINATION_IPV4_NETWORK_BASE_ADDRESS_DECIMAL \\\\\n";
+fi
+
+if [ -n "$DESTINATION_IPV4_NETWORK_END_ADDRESS_DECIMAL" ]; then
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_TARGET_PROTOCOL_ADDRESS,32 <= $DESTINATION_IPV4_NETWORK_END_ADDRESS_DECIMAL \\\\\n";
+fi
+
+if [ -z "DESTINATION_IPV4_ADDRESS" ] && [ -z "$DESTINATION_IPV4_NETWORK" ]; then
+	printf "\\t\\t#ARP Target Protocol address unrestricted - consider the security implications.\n";
 fi
 
 exit 0;
