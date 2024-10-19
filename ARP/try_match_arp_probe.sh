@@ -52,7 +52,7 @@ if [ ! -x $DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL ]; then
 fi
 
 print_description() {
-	printf "A program that prints a portion of an NFT rule match section. The match identifies ARP Gratuitous Requests, where the Target Hardware Address is Duplicated.\n">&2;
+	printf "A program that prints a portion of an NFT rule match section. The match identifies ARP Probe Requests.\n">&2;
 }
 
 print_description_then_exit() {
@@ -72,7 +72,6 @@ print_dependencies() {
 	printf "$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\n">&2;
 	printf "$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS\n">&2;
 	printf "$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\n">&2;
-	printf "$DEPENDENCY_PATH_CONVERT_MAC_ADDRESS_TO_DECIMAL\n">&2;
 	printf "\n">&2;
 }
 
@@ -113,7 +112,7 @@ print_usage() {
 	printf " Optional: --requested-ipv4-network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
 	printf "  Note: the ipv4 addresses that the client at --source-mac-address is claiming\n">&2;
 	printf "\n">&2;
-	printf " Note: you cannot supply both an address and a network.\n">&2;
+	printf " Note: you cannot combine --requested-ipv4-address and --requested-ipv4-network.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
 	printf " Note: this causes the program to skip parameter validation (if you know they are valid)\n">&2;
@@ -360,7 +359,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 	fi
 
 	if [ -n "$REQUESTED_IPV4_ADDRESS" ] && [ -n "$REQUESTED_IPV4_NETWORK" ]; then
-		printf "\nInvalid combination of --requested-ipv4-address and --request-ipv4-network. ">&2;
+		printf "\nInvalid combination of --requested-ipv4-address and --requested-ipv4-network. ">&2;
 		print_usage_then_exit;
 	fi
 
@@ -368,17 +367,17 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		$DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS --address "$REQUESTED_IPV4_ADDRESS"
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --requested-address. ">&2; print_usage_then_exit; ;;
+			1) printf "\nInvalid --requested-ipv4-address. ">&2; print_usage_then_exit; ;;
 			*) printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS\" produced a failure exit code ($?).\n">&2; exit 3; ;;
 		esac
 	fi
 
 	if [ -n "$REQUESTED_IPV4_NETWORK" ]; then
-		$DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK --address "$REQUESTED_IPV4_NETWORK"
+		$DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK --network "$REQUESTED_IPV4_NETWORK"
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --requested-network. ">&2; print_usage_then_exit; ;;
-			*) printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK\" produced a failure exit code $(?).\n">&2; exit 3; ;;
+			1) printf "\nInvalid --requested-ipv4-network. ">&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK\" produced a failure exit code ($?).\n">&2; exit 3; ;;
 		esac
 	fi
 fi
@@ -488,20 +487,17 @@ fi
 printf "\\t#Target Hardware Address is 0 in an ARP Probe\n";
 printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_TARGET_HARDWARE_ADDRESS,48 0 \\\\\n";
 
-printf "\\t#Match Source and Destination IP address - who is informing their peers\n";
-if [ -n "$REQUESTED_IPV4_ADDRESS" ]; then
-	printf "\\t#Sending Protocol Address is 0 in an ARP Probe\n";
-	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_SENDING_PROTOCOL_ADDRESS,32 0 \\\\\n";
+printf "\\t#Match Sending and Target Protocol Addresses - who is informing their peers\n";
 
+printf "\\t#Sending Protocol Address is 0 in an ARP Probe\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_SENDING_PROTOCOL_ADDRESS,32 0 \\\\\n";
+
+if [ -n "$REQUESTED_IPV4_ADDRESS" ]; then
 	printf "\\t#Match Target Protocol Address - the address being probed for conflicts.\n";
 	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_TARGET_PROTOCOL_ADDRESS,32 $REQUESTED_IPV4_ADDRESS_DECIMAL \\\\\n";
 fi
 
 if [ -n "$REQUESTED_IPV4_NETWORK" ]; then
-	printf "\\t#Sending Protocol Address is 0 in an ARP Probe\n";
-
-	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_SENDING_PROTOCOL_ADDRESS,32 0 \\\\\n";
-
 	printf "\\t#Match Target Protocol Address - the address being probed for conflicts.\n";
 
 	if [ -n "$REQUESTED_IPV4_NETWORK_BASE_ADDRESS_DECIMAL" ]; then
@@ -513,8 +509,8 @@ if [ -n "$REQUESTED_IPV4_NETWORK" ]; then
 	fi
 fi
 
-if [ -z "REQUESTED_IPV4_ADDRESS" ] && [ -z "$REQUEST_IPV4_NETWORK" ]; then
-	printf "\\t#ARP Source and Destination Protocol address unrestricted - consider the security implications.\n";
+if [ -z "$REQUESTED_IPV4_ADDRESS" ] && [ -z "$REQUESTED_IPV4_NETWORK" ]; then
+	printf "\\t#ARP Target Protocol address unrestricted - consider the security implications.\n";
 fi
 
 exit 0;
