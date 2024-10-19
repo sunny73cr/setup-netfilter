@@ -507,7 +507,7 @@ if [ -n "$REQUESTED_IPV4_NETWORK_END_ADDRESS_DECIMAL" ]; then
 	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ARP_TARGET_PROTOCOL_ADDRESS,32 <= $REQUESTED_IPV4_NETWORK_END_ADDRESS_DECIMAL \\\\\n";
 fi
 
-if [ -z "REQUESTED_IPV4_ADDRESS" ] && [ -z "$REQUESTED_IPV4_NETWORK" ]; then
+if [ -z "$REQUESTED_IPV4_ADDRESS" ] && [ -z "$REQUESTED_IPV4_NETWORK" ]; then
 	printf "\\t\\t#ARP Source and Destination Protocol address unrestricted - consider the security implications.\n";
 fi
 
