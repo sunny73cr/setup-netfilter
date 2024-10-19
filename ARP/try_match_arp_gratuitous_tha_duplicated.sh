@@ -364,7 +364,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		print_usage_then_exit;
 	fi
 
-	if [ -n "$REQUESTED_ADDRESS" ]; then
+	if [ -n "$REQUESTED_IPV4_ADDRESS" ]; then
 		$DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS --address "$REQUESTED_IPV4_ADDRESS"
 		case $? in
 			0) ;;
@@ -373,7 +373,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		esac
 	fi
 
-	if [ -n "$REQUESTED_NETWORK" ]; then
+	if [ -n "$REQUESTED_IPV4_NETWORK" ]; then
 		$DEPENDENCY_PATH_VALIDATE_IPV4_NETWORK --address "$REQUESTED_IPV4_NETWORK"
 		case $? in
 			0) ;;
@@ -415,7 +415,7 @@ if [ -n "$REQUESTED_IPV4_ADDRESS" ]; then
 	REQUESTED_IPV4_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $REQUESTED_IPV4_ADDRESS);
 	case $? in
 		0) ;;
-		*) printf "$0: dependency \"\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).\n">&2; exit 3; ;;
 	esac
 fi
 
