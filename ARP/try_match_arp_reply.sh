@@ -101,44 +101,44 @@ print_usage() {
 	printf "Parameters:\n">&2;
 	printf "\n">&2;
 	printf " Optional: --hardware-address-type x (where x is 0-65535)\n">&2;
-	printf "  Note: if --hardware-address-type is not provided, the default is 1 (Ethernet)\n">&2;
+	printf "  if --hardware-address-type is not provided, the default is 1 (Ethernet)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --hardware-address-length x (where x is 0-255)\n">&2;
-	printf "  Note: if --hardware-address-length is not provided, the default is 6 (6 bytes for a MAC address)\n">&2;
+	printf "  if --hardware-address-length is not provided, the default is 6 (6 bytes for a MAC address)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --protocol-address-type x (where x is 0-65535)\n">&2;
-	printf "  Note: if --protocol-address-type is not provided, the default is 0x800 (IPV4 Address)\n">&2;
+	printf "  if --protocol-address-type is not provided, the default is 0x800 (IPV4 Address)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --protocol-address-length x (where x is 0-255)\n">&2;
-	printf "  Note: if --protocol-address-length is not provided, the default is 4 (4 bytes for an IPV4 address)\n">&2;
+	printf "  if --protocol-address-length is not provided, the default is 4 (4 bytes for an IPV4 address)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --source-mac-address XX:XX:XX:XX:XX:XX (where X is a-f, or A-F, or 0-9: hexadecimal)\n">&2;
-	printf "  Note: the hardware address of the peer that is replying to the destination MAC / IP pair\n">&2;
+	printf "  the hardware address of the peer that is replying to the destination MAC / IP pair\n">&2;
 	printf "\n">&2;
 	printf " Optional: --source-ipv4-address X.X.X.X (where X is 0-255)\n">&2
-	printf "  Note: the ipv4 address owned by the peer (MAC address) that is replying to the destination MAC / IP pair\n">&2;
+	printf "  the ipv4 address owned by the peer (MAC address) that is replying to the destination MAC / IP pair\n">&2;
 	printf "\n">&2;
 	printf " Optional: --source-ipv4-network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
-	printf "  Note: a contiguous block of IPV4 addresses that could be owned by the peer (MAC address) that is replying to the destinaiton MAC / IP Pair\n">&2;
+	printf "  a contiguous block of IPV4 addresses that could be owned by the peer (MAC address) that is replying to the destinaiton MAC / IP Pair\n">&2;
 	printf "\n">&2;
-	printf " Note: the arguments --source-ipv4-address and --source-ipv4-network cannot be combined.\n">&2;
+	printf " the arguments --source-ipv4-address and --source-ipv4-network cannot be combined.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --destination-mac-address XX:XX:XX:XX:XX:XX (where x is a-f, A-F, or 0--9: hexadecimal)\n">&2;
-	printf "  Note: the hardware address of the peer that is being replied to.\n">&2;
+	printf "  the hardware address of the peer that is being replied to.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --destination-ipv4-address X.X.X.X (where X is 0-255)\n">&2
-	printf "  Note: the ipv4 address of the peer that is being replied to.\n">&2;
+	printf "  the ipv4 address of the peer that is being replied to.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --destination-ipv4-network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
-	printf "  Note: a contiguous block of IPV4 addresses that can be replied to.\n">&2;
+	printf "  a contiguous block of IPV4 addresses that can be replied to.\n">&2;
 	printf "\n">&2;
-	printf " Note: the arguments --destination-ipv4-address and --destination-ipv4-network cannot be combined.\n">&2;
+	printf " the arguments --destination-ipv4-address and --destination-ipv4-network cannot be combined.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
-	printf " Note: this causes the program to skip parameter validation (if you know they are valid)\n">&2;
+	printf "  this causes the program to skip parameter validation (if you know they are valid)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --only-validate\n">&2;
-	printf " Note: this causes the program to exit after validating parameters.\n">&2;
+	printf "  this causes the program to exit after validating parameters.\n">&2;
 	printf "\n">&2;
 }
 

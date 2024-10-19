@@ -93,32 +93,32 @@ print_usage() {
 	printf "Parameters:\n">&2;
 	printf "\n">&2;
 	printf " Optional: --hardware-address-type x (where x is 0-65535)\n">&2;
-	printf "  Note: if --hardware-address-type is not provided, the default is 1 (Ethernet)\n">&2;
+	printf "  if --hardware-address-type is not provided, the default is 1 (Ethernet)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --hardware-address-length x (where x is 0-255)\n">&2;
-	printf "  Note: if --hardware-address-length is not provided, the default is 6 (6 bytes for a MAC address)\n">&2;
+	printf "  if --hardware-address-length is not provided, the default is 6 (6 bytes for a MAC address)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --protocol-address-type x (where x is 0-65535)\n">&2;
-	printf "  Note: if --protocol-address-type is not provided, the default is 0x800 (IPV4 Address)\n">&2;
+	printf "  if --protocol-address-type is not provided, the default is 0x800 (IPV4 Address)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --protocol-address-length x (where x is 0-255)\n">&2;
-	printf "  Note: if --protocol-address-length is not provided, the default is 4 (4 bytes for an IPV4 address)\n">&2;
+	printf "  if --protocol-address-length is not provided, the default is 4 (4 bytes for an IPV4 address)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --source-mac-address XX:XX:XX:XX:XX:XX (where X is a-f, or A-F, or 0-9: hexadecimal)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --requested-ipv4-address X.X.X.X (where X is 0-255)\n">&2
-	printf "  Note: the ipv4 address that the client at --source-mac-address is claiming\n">&2;
+	printf "  the ipv4 address that the client at --source-mac-address is claiming\n">&2;
 	printf "\n">&2;
 	printf " Optional: --requested-ipv4-network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
-	printf "  Note: the ipv4 addresses that the client at --source-mac-address is claiming\n">&2;
+	printf "  the ipv4 addresses that the client at --source-mac-address is claiming\n">&2;
 	printf "\n">&2;
-	printf " Note: you cannot supply both an address and a network.\n">&2;
+	printf " you cannot supply both an address and a network.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
-	printf " Note: this causes the program to skip parameter validation (if you know they are valid)\n">&2;
+	printf "  this causes the program to skip parameter validation (if you know they are valid)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --only-validate\n">&2;
-	printf " Note: this causes the program to exit after validating parameters.\n">&2;
+	printf "  this causes the program to exit after validating parameters.\n">&2;
 	printf "\n">&2;
 }
 
