@@ -112,7 +112,7 @@ print_usage() {
 	printf " Optional: --requested-ipv4-network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
 	printf "  the ipv4 addresses that the client at --source-mac-address is claiming\n">&2;
 	printf "\n">&2;
-	printf " you cannot combine --requested-ipv4-address and --requested0ipv4-network.\n">&2;
+	printf " you cannot combine --requested-ipv4-address and --requested-ipv4-network.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
 	printf "  this causes the program to skip parameter validation (if you know they are valid)\n">&2;

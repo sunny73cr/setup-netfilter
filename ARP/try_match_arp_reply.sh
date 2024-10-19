@@ -132,7 +132,7 @@ print_usage() {
 	printf " Optional: --destination-ipv4-network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
 	printf "  a contiguous block of IPV4 addresses that can be replied to.\n">&2;
 	printf "\n">&2;
-	printf " the arguments --destination-ipv4-address and --destination-ipv4-network cannot be combined.\n">&2;
+	printf " you cannot combine --destination-ipv4-address and --destination-ipv4-network.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
 	printf "  this causes the program to skip parameter validation (if you know they are valid)\n">&2;
