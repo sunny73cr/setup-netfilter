@@ -2,27 +2,57 @@
 
 if [ -z "$ENV_SETUP_NFT" ]; then printf "setup-netfilter: set ENV_SETUP_NFT to the root path of the setup-netfilter directory before continuing.\n">&2; exit 4; fi
 
-SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_is_valid.sh";
-SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
-SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_service_id_is_valid.sh";
+DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_is_valid.sh";
 
-if [ ! -x $SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID ]; then
-	printf "$0: dependency: $SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID is missing or is not executable.\n">&2;
+if [ ! -x $DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
-if [ ! -x $SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID ]; then
-	printf "$0: dependency: $SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID is missing or is not executable.\n">&2;
+DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_address_is_valid.sh";
+
+if [ ! -x $DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
-if [ ! -x $SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID ]; then
-	printf "$0: dependency: $SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID is missing or is not executable.\n">&2;
+DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_ipv4_network_is_valid.sh";
+
+if [ ! -x $DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID\" is missing or is not executable.\n">&2;
+	exit 3;
+fi
+
+DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_service_user_id_is_valid.sh";
+
+if [ ! -x $DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\" is missing or is not executable.\n">&2;
+	exit 3;
+fi
+
+DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/convert_cidr_network_to_base_address.sh";
+
+if [ ! -x $DEPENDENCY_PATH_CIDR_NETWORK_TO_BASE_ADDRESS ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_CIDR_NETWORK_TO_BASE_ADDRESS\" is missing or is not executable.\n">&2;
+	exit 3;
+fi
+
+DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/convert_cidr_network_to_end_address.sh";
+
+if [ ! -x $DEPENDENCY_PATH_CIDR_NETWORK_TO_END_ADDRESS ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_CIDR_NETWORK_TO_END_ADDRESS\" is missing or is not executable.\n">&2;
+	exit 3;
+fi
+
+DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL="$ENV_SETUP_NFT/SCRIPT_HELPERS/convert_ipv4_address_to_decimal_number.sh";
+
+if [ ! -x $DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL ]; then
+	printf "$0: dependency: \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" is missing or is not executable.\n">&2;
 	exit 3;
 fi
 
 print_description() {
-	printf "A program that prints part of an NFT rule 'match' section. The match intends to identify DHCP Ack packets.\n">&2;
+	printf "A program that prints part of an NFT rule 'match' section. The match intends to identify DHCP ACK packets.\n">&2;
 }
 
 print_description_then_exit() {
@@ -33,7 +63,15 @@ print_description_then_exit() {
 if [ "$1" = "-e" ]; then print_description_then_exit; fi
 
 print_dependencies() {
+	printf "Dependencies: \n">&2;
 	printf "printf\n">&2;
+	printf "$DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\n">&2;
+	printf "$DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\n">&2;
+	printf "$DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID\n">&2;
+	printf "$DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID\n">&2;
+	printf "$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\n">&2;
+	printf "$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS\n">&2;
+	printf "$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\n">&2;
 	printf "\n">&2;
 }
 
@@ -46,39 +84,41 @@ if [ "$1" = "-d" ]; then print_dependencies_then_exit; fi
 
 print_usage() {
 	printf "Usage: $0 <parameters>\n">&2;
-	printf " -e\n">&2;
-	printf " calling the program with the '-e' flag prints an explanation of the scripts' function or purpose.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -h\n">&2;
-	printf " calling the program with the '-h' flag prints an explanation of the scripts' parameters and their effect.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -d\n">&2;
-	printf " callling the program with the '-d' flags prints a (new-line separated, and terminated) list of the programs' dependencies (what it needs to run).\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -ehd\n">&2;
-	printf " calling the program with the '-ehd' flag (or, ehd-ucate me) prints the description, the dependencies list, and the usage text.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " Note that calling all scripts in a project with the flag '-ehd', then concatenating their output using file redirection (string > file),\n">&2;
-	printf " Is a nice and easy way to maintain documentation for your project.\n">&2;
+	printf "Flags used by themselves: \n">&2;
+	printf " -e (prints an explanation of the functions' purpose) (exit code 2)\n">&2;
+	printf " -h (prints an explanation of the functions' available parameters, and their effect) (exit code 2)\n">&2;
+	printf " -d (prints the functions' dependencies: newline delimited list) (exit code 2)\n">&2
+	printf " -ehd (prints the above three) (exit code 2)\n">&2;
 	printf "\n">&2;
 	printf "Parameters:\n">&2;
 	printf "\n">&2;
 	printf " Optional: --client-mac-address XX:XX:XX:XX:XX:XX (where X is a-f, or A-F, or 0-9 - hexadecimal)\n">&2;
 	printf "  Note: it is strongly recommended to supply the client mac address, if you know it.\n">&2;
 	printf "\n">&2;
-	printf " Optional: --server-address-ipv4 X.X.X.X (where X is 0-255)\n">&2;
+	printf " Optional: --server-ipv4-address X.X.X.X (where X is 0-255)\n">&2;
+	printf "  Note: the IPV4 Address assigned to the DHCP server that will assign IPV4 Addresses to clients.\n">&2;
 	printf "\n">&2;
-	printf " Optional: --requested-address-ipv4 X.X.X.X (where X is 0-255)\n">&2;
+	printf " Optional: --server-ipv4-network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
+	printf "  Note: a contiguous block of IPV4 Address assigned to DHCP servers that will assign IPV4 Addresses to clients.\n">&2;
+	printf "\n">&2;
+	printf " Note: you cannot combine --server-ipv4-address and --server-ipv4-network\n">&2;
+	printf "\n">&2;
+	printf " Optional: --assigned-ipv4-address X.X.X.X (where X is 0-255)\n">&2;
+	printf "  Note: the IPV4 Address assigned to the network client.\n">&2
 	printf "\n">&2
-	printf "  Note: it is strongly recommended to supply both a server and client address.\n">&2;
+	printf " Optional: --assigned-ipv4-network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2
+	printf "  Note: a contiguous block of IPV4 Addresses that could be assigned to the network client.\n">&2
+	printf "\n">&2
+	printf " Note: you cannot combine --assigned-ipv4-address and --assigned-ipv4-network\n">&2;
+	printf "\n">&2;
+	printf " Note: it is strongly recommended to supply both a server and client address or network.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --transaction-id x (where x is 0-4,294,967,296)\n">&2;
+	printf "  Note: the identifier of the DHCP transaction.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --dhcp-service-uid X (where X is 1-65535)\n">&2;
-	printf " Note: it is stronly recommended to supply the user ID that is assigned to the DHCP server 'service' listed in the /etc/passwd file.">&2;
-	printf "  Note: without this restriction, DHCP Ack packets are permitted to any program.\n";
+	printf "  Note: it is stronly recommended to supply the user ID that is assigned to the DHCP server 'service' listed in the /etc/passwd file.\n">&2;
+	printf "  Note: without this restriction, DHCP ACK packets are permitted to any program.\n";
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
 	printf "  Note: causes the program to skip validating inputs (if you know they are valid).\n">&2;
@@ -100,13 +140,16 @@ if [ "$1" = "-ehd" ]; then print_description; printf "\n">&2; print_dependencies
 #ARGUMENTS:
 CLIENT_MAC_ADDRESS="";
 SERVER_IPV4_ADDRESS="";
-ALLOCATED_IPV4_ADDRESS="";
+SERVER_IPV4_NETWORK="";
+ASSIGNED_IPV4_ADDRESS="";
+ASSIGNED_IPV4_NETWORK="";
 DHCP_SERVICE_UID="";
+TRANSACTION_ID="";
 
 #FLAGS:
 CLIENT_IS_REUSING_IPV4_ADDRESS=0;
 SKIP_VALIDATION=0;
-ONLY_VALIDATION=0;
+ONLY_VALIDATE=0;
 
 while true; do
 	case $1 in
@@ -138,13 +181,46 @@ while true; do
 			fi
 		;;
 
-		--allocated-ipv4-address)
+		--server-ipv4-network)
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			elif [ -z "$2" ]; then
 				print_usage_then_exit;
 			else
-				ALLOCATED_IPV4_ADDRESS=$2;
+				SERVER_IPV4_NETWORK=$2;
+				shift 2;
+			fi
+		;;
+
+		--assigned-ipv4-address)
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ -z "$2" ]; then
+				print_usage_then_exit;
+			else
+				ASSIGNED_IPV4_ADDRESS=$2;
+				shift 2;
+			fi
+		;;
+
+		--assigned-ipv4-network)
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ -z "$2" ]; then
+				print_usage_then_exit;
+			else
+				ASSIGNED_IPV4_NETWORK=$2;
+				shift 2;
+			fi
+		;;
+
+		--transaction-id)
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ -z "$2" ]; then
+				print_usage_then_exit;
+			else
+				TRANSACTION_ID=$2;
 				shift 2;
 			fi
 		;;
@@ -175,7 +251,7 @@ while true; do
 		;;
 
 		--only-validation)
-			ONLY_VALIDATION=1;
+			ONLY_VALIDATE=1;
 			shift 1;
 		;;
 
@@ -191,61 +267,186 @@ while true; do
 	esac
 done;
 
-if [ $SKIP_VALIDATION -eq 1 ] && [ $ONLY_VALIDATION -eq 1 ]; then exit 0; fi
+if [ $SKIP_VALIDATION -eq 1 ] && [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
 if [ $SKIP_VALIDATION -eq 0 ]; then
 	if [ -n "$CLIENT_MAC_ADDRESS" ]; then
-		$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID --address $CLIENT_MAC_ADDRESS
+		$DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID --address $CLIENT_MAC_ADDRESS
 		case $? in
 			0) ;;
 			1) printf "\nInvalid --client-mac-address. \n">&2; print_usage_then_exit; ;;
-			*) printf "$0: dependency: \"$SCRIPT_DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced a failure exit code.\n">&2; exit 3; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_CHECK_MAC_ADDRESS_IS_VALID\" produced a failure exit code ($?).\n">&2; exit 3; ;;
 		esac
 	fi
 
 	if [ -n "$SERVER_IPV4_ADDRESS" ]; then
-		$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address $SERVER_IPV4_ADDRESS
+		$DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address $SERVER_IPV4_ADDRESS
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --server-address-ipv4. \n">&2; print_usage_then_exit; ;;
-			*) printf "$0: dependency: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n">&2; exit 3; ;;
+			1) printf "\nInvalid --server-ipv4-address. \n">&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code ($?).\n">&2; exit 3; ;;
 		esac
 	fi
 
-	if [ $CLIENT_IS_REUSING_IPV4_ADDRESS -eq 0 ] && [ -n "$ALLOCATED_IPV4_ADDRESS" ]; then
-		printf "$0: I cannot assume that you intend to allow a bound/renew/rebind DHCPACK; please retry with the flag --client-is-reusing-ipv4-address enabled.\n">&2;
-		printf "$0: Alternatively, please omit the $ALLOCATED_IPV4_ADDRESS.\n">&2;
-		printf "$0: Please refer to RFC2131 and RFC2132 for more information.\n">&2;
-		print_usage_then_exit;
-	fi
-
-	if [ $CLIENT_IS_REUSING_IPV4_ADDRESS -eq 1 ] && [ -z "$ALLOCATED_IPV4_ADDRESS" ]; then
-		printf "$0: If you intend to allow a bound/renew/rebind DHCPACK; please retry and supply an 'allocated' IPV4 address/network you allow the server to issue.\n">&2;
-		printf "$0: Alternatively, please omit the --client-is-reusing-ipv4-address-enabled flag.\n">&2;
-		printf "$0: Please refer to RFC2131 and RFC2132 for more information.\n">&2;
-		print_usage_then_exit;
-	fi
-
-	if [ -n "$ALLOCATED_IPV4_ADDRESS" ]; then
-		$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address $ALLOCATED_IPV4_ADDRESS;
+	if [ -n "$SERVER_IPV4_NETWORK" ]; then
+		$DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID --network $SERVER_IPV4_NETWORK;
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --allocated-address-ipv4. \n">&2; print_usage_then_exit; ;;
-			*) printf "$0: dependency: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n">&2; exit 3; ;;
+			1) printf "\nInvalid --server-ipv4-network. \n">&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID\" produced a failure exit code ($?).\n">&2; exit 3; ;;
 		esac
+	fi
+
+	if [ $CLIENT_IS_REUSING_IPV4_ADDRESS -eq 0 ]; then
+		if [ -n "$ASSIGNED_IPV4_ADDRESS" ] || [ -n "$ASSIGNED_IPV4_NETWORK" ]; then
+			printf "\n">&2;
+			printf "$0: I cannot assume that you intend to allow a bound/renew/rebind DHCPACK; please retry with the flag --client-is-reusing-ipv4-address enabled.\n">&2;
+			printf "$0: Alternatively, please omit the --assigned-ipv4-address or --assigned-ipv4-network.\n">&2;
+			printf "$0: Please refer to RFC2131 and RFC2132 for more information.\n\n">&2;
+			print_usage_then_exit;
+		fi
+	else
+		if [ -z "$ASSIGNED_IPV4_ADDRESS" ] && [ -z "$ASSIGNED_IPV4_NETWORK" ]; then
+			printf "\n">&2;
+			printf "$0: If you intend to allow a bound/renew/rebind DHCPACK; please retry and supply an 'assigned' IPV4 address/network you allow the server to issue.\n">&2;
+			printf "$0: Alternatively, please omit the --client-is-reusing-ipv4-address-enabled flag.\n">&2;
+			printf "$0: Please refer to RFC2131 and RFC2132 for more information.\n\n">&2;
+			print_usage_then_exit;
+		fi
+	fi
+
+	if [ -n "$ASSIGNED_IPV4_ADDRESS" ]; then
+		$DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address $ASSIGNED_IPV4_ADDRESS;
+		case $? in
+			0) ;;
+			1) printf "\nInvalid --assigned-ipv4-address. \n">&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+		esac
+	fi
+
+	if [ -n "$ASSIGNED_IPV4_NETWORK" ]; then
+		$DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID --network $ASSIGNED_IPV4_NETWORK;
+		case $? in
+			0) ;;
+			1) printf "\nInvalid --assigned-ipv4-network. \n">&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID\" produced a failure exit code ($?).\n">&2; exit 3; ;;
+		esac
+	fi
+
+	if [ -n "$TRANSACTION_ID" ]; then
+		if [ -z "$(echo $TRANSACTION_ID | grep '[0-9]\{1,10\}')" ]; then
+			printf "\nInvalid --transaction-id (must be a 1-10 digit number). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $TRANSACTION_ID -lt 0 ]; then
+			printf "\nInvalid --transaction-id (must be greater than or equal to 0). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $TRANSACTION_ID -gt 4294967295 ]; then
+			printf "\nInvalid --transaction-id (must be less than 4294967296). ">&2;
+			print_usage_then_exit;
+		fi
 	fi
 
 	if [ -n "$SERVICE_USER_ID" ]; then
-		$SCRIPT_DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID --id $SERVICE_USER_ID
+		$DEPENDENCY_PATH_CHECK_SERVICE_USER_ID_IS_VALID --id $SERVICE_USER_ID
 		case $? in
 			0) ;;
 			1) printf "\nInvalid --dhcp-service-uid. (confirm the /etc/passwd entry). \n">&2; print_usage_then_exit; ;;
-			*) printf "$0: dependency: \"$SCRIPT_DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code.\n">&2; exit 3; ;;
+			*) printf "$0: dependency: \"$DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID\" produced a failure exit code ($?).\n">&2; exit 3; ;;
 		esac
 	fi
 fi
 
 if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
+
+CLIENT_MAC_ADDRESS_CLEANED="";
+#nft expects hexadecimal format; format the MAC address
+if [ -n "$CLIENT_MAC_ADDRESS" ]; then
+	CLIENT_MAC_ADDRESS_CLEANED="0x$(echo $CLIENT_MAC_ADDRESS | sed 's/://g')";
+fi
+
+ASSIGNED_IPV4_ADDRESS_DECIMAL="";
+if [ -n "$ASSIGNED_IPV4_ADDRESS" ]; then
+	ASSIGNED_IPV4_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $ASSIGNED_IPV4_ADDRESS);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).">&2; exit 3; ;;
+	esac
+fi
+
+ASSIGNED_IPV4_NETWORK_BASE_ADDRESS="";
+ASSIGNED_IPV4_NETWORK_BASE_ADDRESS_DECIMAL="";
+ASSIGNED_IPV4_NETWORK_END_ADDRESS="";
+ASSIGNED_IPV4_NETWORK_END_ADDRESS_DECIMAL="";
+if [ -n "$ASSIGNED_IPV4_NETWORK" ]; then
+	ASSIGNED_IPV4_NETWORK_BASE_ADDRESS=$($DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS --network $ASSIGNED_IPV4_NETWORK);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\" produced a failure exit code ($?).">&2; exit 3; ;;
+	esac
+
+	ASSIGNED_IPV4_NETWORK_BASE_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $ASSIGNED_IPV4_NETWORK_BASE_ADDRESS);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).">&2; exit 3; ;;
+	esac
+
+	ASSIGNED_IPV4_NETWORK_END_ADDRESS=$($DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS --network $ASSIGNED_IPV4_NETWORK);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS\" produced a failure exit code ($?).">&2; exit 3; ;;
+	esac
+
+	ASSIGNED_IPV4_NETWORK_END_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $ASSIGNED_IPV4_NETWORK_END_ADDRESS);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).">&2; exit 3; ;;
+	esac
+
+fi
+
+SERVER_IPV4_ADDRESS_DECIMAL="";
+if [ -n "$SERVER_IPV4_ADDRESS" ]; then
+	SERVER_IPV4_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $SERVER_IPV4_ADDRESS);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).">&2; exit 3; ;;
+	esac
+fi
+
+SERVER_IPV4_NETWORK_BASE_ADDRESS="";
+SERVER_IPV4_NETWORK_BASE_ADDRESS_DECIMAL="";
+SERVER_IPV4_NETWORK_END_ADDRESS="";
+SERVER_IPV4_NETWORK_END_ADDRESS_DECIMAL="";
+if [ -n "$SERVER_IPV4_NETWORK" ]; then
+	SERVER_IPV4_NETWORK_BASE_ADDRESS=$($DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS --network $SERVER_IPV4_NETWORK);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_BASE_ADDRESS\" produced a failure exit code ($?).">&2; exit 3; ;;
+	esac
+
+	SERVER_IPV4_NETWORK_BASE_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $SERVER_IPV4_NETWORK_BASE_ADDRESS);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).">&2; exit 3; ;;
+	esac
+
+	SERVER_IPV4_NETWORK_END_ADDRESS=$($DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS --network $SERVER_IPV4_NETWORK);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_CIDR_NETWORK_TO_END_ADDRESS\" produced a failure exit code ($?).">&2; exit 3; ;;
+	esac
+
+	SERVER_IPV4_NETWORK_END_ADDRESS_DECIMAL=$($DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL --address $SERVER_IPV4_NETWORK_END_ADDRESS);
+	case $? in
+		0) ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CONVERT_IPV4_ADDRESS_TO_DECIMAL\" produced a failure exit code ($?).">&2; exit 3; ;;
+	esac
+
+fi
 
 printf "\\t#DHCP message length is a minimum of 2000 bits, packet length should be greater than 250 bytes.\n";
 printf "\\t#Packet length should not be longer than 512 bytes to avoid fragmentation; DHCP messages should be delivered in a single transmission.\n";
@@ -259,81 +460,124 @@ else
 	printf "\\t\\t#meta skuid unknown - please consider the security implications\n";
 fi
 
+OFFSET_MARKER="ih";
+BIT_OFFSET_HEADER_BEGIN=0;
+BIT_OFFSET_OP_CODE=$BIT_OFFSET_HEADER_BEGIN;
+BIT_OFFSET_HARDWARE_ADDRESS_TYPE=$(($BIT_OFFSET_OP_CODE+8));
+BIT_OFFSET_HARDWARE_ADDRESS_LENGTH=$(($BIT_OFFSET_HARDWARE_ADDRESS_TYPE+8));
+BIT_OFFSET_HOPS=$(($BIT_OFFSET_HARDWARE_ADDRESS_LENGTH+8));
+BIT_OFFSET_XID=$(($BIT_OFFSET_HOPS+8));
+BIT_OFFSET_SECONDS=$(($BIT_OFFSET_XID+32));
+BIT_OFFSET_FLAGS=$(($BIT_OFFSET_SECONDS+16));
+BIT_OFFSET_CLIENT_IP_ADDRESS=$(($BIT_OFFSET_FLAGS+16));
+BIT_OFFSET_YOUR_IP_ADDRESS=$(($BIT_OFFSET_CLIENT_IP_ADDRESS+32));
+BIT_OFFSET_SERVER_IP_ADDRESS=$(($BIT_OFFSET_YOUR_IP_ADDRESS+32));
+BIT_OFFSET_GATEWAY_IP_ADDRESS=$(($BIT_OFFSET_SERVER_IP_ADDRESS+32));
+BIT_OFFSET_CLIENT_HARDWARE_ADDRESS=$(($BIT_OFFSET_GATEWAY_IP_ADDRESS+32));
+BIT_OFFSET_HARDWARE_ADDRESS_PADDING=$(($BIT_OFFSET_CLIENT_HARDWARE_ADDRESS+48));
+
 printf "\\t#DHCP OP Code of 2 (BOOTREPLY)\n";
-printf "\\t\\t@ih,0,8 0x02 \\\\\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_OP_CODE,8 0x02 \\\\\n";
 
 printf "\\t#HTYPE (Hardware Address Type) (1 Ethernet)\n";
-printf "\\t\\t@ih,8,8 1 \\\\\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_HARDWARE_ADDRESS_TYPE,8 1 \\\\\n";
 
 printf "\\t#HLEN (Hardware Address Length) (6 Segment MAC)\n";
-printf "\\t\\t@ih,16,8 6 \\\\\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_HARDWARE_ADDRESS_LENGTH,8 6 \\\\\n";
 
 printf "\\t#HOPS (Client sets to 0, optionally set by relay-agents)\n";
-printf "\\t\\t@ih,24,8 0 \\\\\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_HOPS,8 0 \\\\\n";
 
-printf "\\t#XID (Transaction ID) client generated random number to associate communications\n";
-printf "\\t\\t@ih,32,32 != 0 \\\\\n";
+if [ -n "$TRANSACTION_ID" ]; then
+	printf "\\t#XID (Transaction ID) client generated random number to associate communications\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_XID,32 $TRANSACTION_ID \\\\\n";
+else
+	printf "\\t#TransactionID is not restricted - consider the implications.\n";
+fi
 
 printf "\\t#SECS (Seconds since the request was made)\n";
-printf "\\t\\t@ih,64,16 0 \\\\\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_SECONDS,16 0 \\\\\n";
 
 printf "\\t#Flags: no flags for DHCP ACK, 16 zeroes, DHCPACK is not broadcasted (See RFC1541)\n";
-printf "\\t\\t@ih,80,16 0 \\\\\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_FLAGS,16 0 \\\\\n";
 
-printf "\\t#CIADDR (Client IP Address)\n";
 if [ $CLIENT_IS_REUSING_IPV4_ADDRESS -eq 1 ]; then
-	if [ -n "$ALLOCATED_IPV4_ADDRESS" ]; then
-		printf "\\t\\t@ih,96,8 $(echo $ALLOCATED_IPV4_ADDRESS | cut -d '.' -f 1) \\\\\n";
-		printf "\\t\\t@ih,104,8 $(echo $ALLOCATED_IPV4_ADDRESS | cut -d '.' -f 2) \\\\\n";
-		printf "\\t\\t@ih,112,8 $(echo $ALLOCATED_IPV4_ADDRESS | cut -d '.' -f 3) \\\\\n";
-		printf "\\t\\t@ih,120,8 $(echo $ALLOCATED_IPV4_ADDRESS | cut -d '.' -f 4) \\\\\n";
-	else
-		printf "\\t\\t#@ih,96,32 - Cannot verify the allocated address, please consider the secrity implications.\n";
+	if [ -n "$ASSIGNED_IPV4_ADDRESS" ] || [ -n "$ASSIGNED_IPV4_NETWORK" ]; then
+		printf "\\t#Match CIADDR (Client IP Address)\n";
+	fi
+
+	if [ -n "$ASSIGNED_IPV4_ADDRESS" ]; then
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_CLIENT_IP_ADDRESS,32 $ASSIGNED_IPV4_ADDRESS_DECIMAL \\\\\n";
+	fi
+
+	if [ -n "$ASSIGNED_IPV4_NETWORK_BASE_ADDRESS_DECIMAL" ]; then
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_CLIENT_IP_ADDRESS,32 >= $ASSIGNED_IPV4_NETWORK_BASE_ADDRESS_DECIMAL \\\\\n";
+	fi
+
+	if [ -n "$ASSIGNED_IPV4_NETWORK_END_ADDRESS_DECIMAL" ]; then
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_CLIENT_IP_ADDRESS,32 <= $ASSIGNED_IPV4_NETWORK_END_ADDRESS_DECIMAL \\\\\n";
+	fi
+
+	if [ -z "$ASSIGNED_IPV4_ADDRESS" ] && [ -z "$ASSIGNED_IPV4_NETWORK" ]; then
+		printf "\\t\\t#Client address/network unrestricted - please consider the secrity implications.\n";
 	fi
 else
 	printf "\\t#Initial DHCPACK, this is the first allocation, and client IP address should be 0 (is not yet known)\n";
 	printf "\\t\\t@ih,96,32 0\n";
 fi
 
-printf "\\t#YIADDR (Your IP address) Your (client) IP address\n";
-if [ -n "$ALLOCATED_IPV4_ADDRESS" ]; then
-	printf "\\t\\t@ih,128,8 $(echo $ALLOCATED_IPV4_ADDRESS | cut -d '.' -f 1) \\\\\n";
-	printf "\\t\\t@ih,136,8 $(echo $ALLOCATED_IPV4_ADDRESS | cut -d '.' -f 2) \\\\\n";
-	printf "\\t\\t@ih,144,8 $(echo $ALLOCATED_IPV4_ADDRESS | cut -d '.' -f 3) \\\\\n";
-	printf "\\t\\t@ih,152,8 $(echo $ALLOCATED_IPV4_ADDRESS | cut -d '.' -f 4) \\\\\n";
-else
-	printf "\\t\\t#@ih,128,32 unrestricted - please consider the security implications\n";
+if [ -n "$ASSIGNED_IPV4_ADDRESS" ] || [ -n "$ASSIGNED_IPV4_NETWORK" ]; then
+	printf "\\t#Match YIADDR (Your IP Address)\n";
 fi
 
-printf "\\t#SIADDR (Server IP address) Returned in DHCPOFFER, DHCPACK, DHCPNAK\n";
+if [ -n "$ASSIGNED_IPV4_ADDRESS" ]; then
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_YOUR_IP_ADDRESS,32 $ASSIGNED_IPV4_ADDRESS_DECIMAL \\\\\n";
+fi
+
+if [ -n "$ASSIGNED_IPV4_NETWORK_BASE_ADDRESS_DECIMAL" ]; then
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_YOUR_IP_ADDRESS,32 >= $ASSIGNED_IPV4_NETWORK_BASE_ADDRESS_DECIMAL \\\\\n";
+fi
+
+if [ -n "$ASSIGNED_IPV4_NETWORK_END_ADDRESS_DECIMAL" ]; then
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_YOUR_IP_ADDRESS,32 <= $ASSIGNED_IPV4_NETWORK_END_ADDRESS_DECIMAL \\\\\n";
+fi
+
+if [ -z "$ASSIGNED_IPV4_ADDRESS" ] && [ -z "$ASSIGNED_IPV4_NETWORK" ]; then
+	printf "\\t\\t#Your address/network unrestricted - please consider the secrity implications.\n";
+fi
+
+if [ -n "$SERVER_IPV4_ADDRESS" ] || [ -n "$SERVER_IPV4_NETWORK" ]; then
+	printf "\\t#Match SIADDR (Server IP Address)\n";
+fi
+
 if [ -n "$SERVER_IPV4_ADDRESS" ]; then
-	printf "\\t\\t@ih,160,8 $(echo $SERVER_IPV4_ADDRESS | cut -d '.' -f 1) \\\\\n";
-	printf "\\t\\t@ih,168,8 $(echo $SERVER_IPV4_ADDRESS | cut -d '.' -f 2) \\\\\n";
-	printf "\\t\\t@ih,176,8 $(echo $SERVER_IPV4_ADDRESS | cut -d '.' -f 3) \\\\\n";
-	printf "\\t\\t@ih,184,8 $(echo $SERVER_IPV4_ADDRESS | cut -d '.' -f 4) \\\\\n";
-else
-	printf "\\t\\t#@ih,160,32 unrestricted - please consider the security implications\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_SERVER_IP_ADDRESS,32 $SERVER_IPV4_ADDRESS_DECIMAL \\\\\n";
 fi
 
-printf "\\t#GIADDR (Relay Agent IP address)\n";
-printf "\\t\\t@ih,192,32 0 \\\\\n";
+if [ -n "$SERVER_IPV4_NETWORK_BASE_ADDRESS_DECIMAL" ]; then
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_SERVER_IP_ADDRESS,32 >= $SERVER_IPV4_NETWORK_BASE_ADDRESS_DECIMAL \\\\\n";
+fi
 
-printf "\\t#CHADDR (Client Hardware Address)\n";
-#printf "\\t\\t@ih,224,64 0 \\\\\n";
-printf "\\t#Confirm each segment of the MAC address matches\n";
+if [ -n "$SERVER_IPV4_NETWORK_END_ADDRESS_DECIMAL" ]; then
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_SERVER_IP_ADDRESS,32 <= $SERVER_IPV4_NETWORK_END_ADDRESS_DECIMAL \\\\\n";
+fi
+
+if [ -z "$SERVER_IPV4_ADDRESS" ] && [ -z "$SERVER_IPV4_NETWORK" ]; then
+	printf "\\t\\t#Server address/network unrestricted - please consider the secrity implications.\n";
+fi
+
+printf "\\t#Match Gateway IP Address (Relay Agent IP address)\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_GATEWAY_IP_ADDRESS,32 0 \\\\\n";
+
 if [ -n "$CLIENT_MAC_ADDRESS" ]; then
-	printf "\\t\\t@ih,224,8 0x$(echo $CLIENT_MAC_ADDRESS | cut -d ':' -f 1) \\\\\n";
-	printf "\\t\\t@ih,232,8 0x$(echo $CLIENT_MAC_ADDRESS | cut -d ':' -f 2) \\\\\n";
-	printf "\\t\\t@ih,240,8 0x$(echo $CLIENT_MAC_ADDRESS | cut -d ':' -f 3) \\\\\n";
-	printf "\\t\\t@ih,248,8 0x$(echo $CLIENT_MAC_ADDRESS | cut -d ':' -f 4) \\\\\n";
-	printf "\\t\\t@ih,256,8 0x$(echo $CLIENT_MAC_ADDRESS | cut -d ':' -f 5) \\\\\n";
-	printf "\\t\\t@ih,264,8 0x$(echo $CLIENT_MAC_ADDRESS | cut -d ':' -f 6) \\\\\n";
+	printf "\\t#Match CHADDR (Client Hardware Address)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_CLIENT_HARDWARE_ADDRESS,48 $CLIENT_MAC_ADDRESS_CLEANED \\\\\n";
 else
-	printf "\\t\\t#@ih,224,64 unrestricted - please consider the security implications\n";
+	printf "\\t\\t#Client Hardware Address unrestricted - please consider the security implications\n";
 fi
 
 printf "\\t#CHADDR Padding - pad to the full 128 bits - 48 consumed; 80 bits of padding\n";
-printf "\\t\\t@ih,272,80 0 \\\\\n";
+printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_HARDWARE_ADDRESS_PADDING,80 0 \\\\\n";
 
 printf "\\t#Cannot verify beyond the CHADDR as the server host name and boot file name fields may be used for options.\n";
 
