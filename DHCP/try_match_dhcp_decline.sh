@@ -253,7 +253,7 @@ fi
 printf "\\t#SECS (Seconds since the request was made)\n";
 printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_SECONDS,16 0 \\\\\n";
 
-printf "\\t#Flags: no flags for DHCP ACK, 16 zeroes, DHCPACK is not broadcasted (See RFC1541)\n";
+printf "\\t#Flags: no flags for DHCP ACK, 16 zeroes, DHCP DECLINE is not broadcasted (See RFC1541)\n";
 printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_FLAGS,16 0 \\\\\n";
 
 printf "\\t#Match CIADDR (Client IP Address)\n";

@@ -113,6 +113,9 @@ print_usage() {
 	printf "\n">&2;
 	printf " Note: it is strongly recommended to supply both a server and client address or network.\n">&2;
 	printf "\n">&2;
+	printf " Optional: --client-is-reusing-ip-address\n">&2;
+	printf "  Note: provide this flag if the client is reusing a previously allocated IP address\n">&2;
+	printf "\n">&2;
 	printf " Optional: --transaction-id x (where x is 0-4,294,967,296)\n">&2;
 	printf "  Note: the identifier of the DHCP transaction.\n">&2;
 	printf "\n">&2;
@@ -279,6 +282,11 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		esac
 	fi
 
+	if [ -n "$SERVER_IPV4_ADDRESS" ] && [ -n "$SERVER_IPV4_NETWORK" ]; then
+		printf "\nInvalid combination of --server-ipv4-address and --server-ipv4-network. ">&2;
+		print_usage_then_exit;
+	fi
+
 	if [ -n "$SERVER_IPV4_ADDRESS" ]; then
 		$DEPENDENCY_PATH_CHECK_IPV4_ADDRESS_IS_VALID --address $SERVER_IPV4_ADDRESS
 		case $? in
@@ -313,6 +321,11 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 			printf "$0: Please refer to RFC2131 and RFC2132 for more information.\n\n">&2;
 			print_usage_then_exit;
 		fi
+	fi
+
+	if [ -n "$ASSIGNED_IPV4_ADDRESS" ] && [ -n "$ASSIGNED_IPV4_NETWORK" ]; then
+		printf "\nInvalid combination of --assigned-ipv4-address and --assigned-ipv4-network. ">&2;
+		print_usage_then_exit;
 	fi
 
 	if [ -n "$ASSIGNED_IPV4_ADDRESS" ]; then
@@ -498,12 +511,19 @@ fi
 printf "\\t#SECS (Seconds since the request was made)\n";
 printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_SECONDS,16 0 \\\\\n";
 
-printf "\\t#Flags: no flags for DHCP ACK, 16 zeroes, DHCPACK is not broadcasted (See RFC1541)\n";
-printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_FLAGS,16 0 \\\\\n";
+printf "\\t#Flags: ";
+if [ $CLIENT_IS_REUSING_IPV4_ADDRESS -eq 1 ]; then
+	printf "no flags for DHCP ACK, 16 zeroes, DHCPACK is not broadcasted for BOUND/RENEW/REBIND answers (See RFC2131)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_FLAGS,16 0 \\\\\n";
+else
+	printf "Broadcast flag for DHCP ACK, 1 bit on, 16 bits off, DHCPACK is broadcasted for initial BINDs (See RFC2131)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_FLAGS,1 1 \\\\\n";
+	printf "\\t\\t@$OFFSET_MARKER,$(($BIT_OFFSET_FLAGS+1)),15 0 \\\\\n";
+fi
 
 if [ $CLIENT_IS_REUSING_IPV4_ADDRESS -eq 1 ]; then
 	if [ -n "$ASSIGNED_IPV4_ADDRESS" ] || [ -n "$ASSIGNED_IPV4_NETWORK" ]; then
-		printf "\\t#Match CIADDR (Client IP Address)\n";
+		printf "\\t#Match CIADDR (Client IP Address) - BOUND/RENEW/REBIND, Client IP address is known.\n";
 	fi
 
 	if [ -n "$ASSIGNED_IPV4_ADDRESS" ]; then
@@ -522,8 +542,8 @@ if [ $CLIENT_IS_REUSING_IPV4_ADDRESS -eq 1 ]; then
 		printf "\\t\\t#Client address/network unrestricted - please consider the secrity implications.\n";
 	fi
 else
-	printf "\\t#Initial DHCPACK, this is the first allocation, and client IP address should be 0 (is not yet known)\n";
-	printf "\\t\\t@ih,96,32 0\n";
+	printf "\\t#Match CIADDR (Client IP Address) - Initial BIND, Client IP address is not yet known.\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_CLIENT_IP_ADDRESS,32 0\n";
 fi
 
 if [ -n "$ASSIGNED_IPV4_ADDRESS" ] || [ -n "$ASSIGNED_IPV4_NETWORK" ]; then
