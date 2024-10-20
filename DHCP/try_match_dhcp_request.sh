@@ -93,41 +93,41 @@ print_usage() {
 	printf "Parameters:\n">&2;
 	printf "\n">&2;
 	printf " Optional: --client-mac-address XX:XX:XX:XX:XX:XX (where X is a-f, or A-F, or 0-9 - hexadecimal)\n">&2;
-	printf "  Note: it is strongly recommended to supply the client mac address, if you know it.\n">&2;
+	printf "  it is strongly recommended to supply the client mac address, if you know it.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --server-ipv4-address X.X.X.X (where X is 0-255)\n">&2;
-	printf "  Note: the IPV4 Address requested to the DHCP server that will assign IPV4 Addresses to clients.\n">&2;
+	printf "  the IPV4 Address requested to the DHCP server that will assign IPV4 Addresses to clients.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --server-ipv4-network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2;
-	printf "  Note: a contiguous block of IPV4 Address requested to DHCP servers that will assign IPV4 Addresses to clients.\n">&2;
+	printf "  a contiguous block of IPV4 Address requested to DHCP servers that will assign IPV4 Addresses to clients.\n">&2;
 	printf "\n">&2;
-	printf " Note: you cannot combine --server-ipv4-address and --server-ipv4-network\n">&2;
+	printf " you cannot combine --server-ipv4-address and --server-ipv4-network\n">&2;
 	printf "\n">&2;
 	printf " Optional: --requested-ipv4-address X.X.X.X (where X is 0-255)\n">&2;
-	printf "  Note: the IPV4 Address requested to the network client.\n">&2
+	printf "  the IPV4 Address requested to the network client.\n">&2
 	printf "\n">&2
 	printf " Optional: --requested-ipv4-network X.X.X.X/Y (where X is 0-255, and Y is 1-32)\n">&2
-	printf "  Note: a contiguous block of IPV4 Addresses that could be requested to the network client.\n">&2
+	printf "  a contiguous block of IPV4 Addresses that could be requested to the network client.\n">&2
 	printf "\n">&2
-	printf " Note: you cannot combine --requested-ipv4-address and --requested-ipv4-network\n">&2;
+	printf " you cannot combine --requested-ipv4-address and --requested-ipv4-network\n">&2;
 	printf "\n">&2;
-	printf " Note: it is strongly recommended to supply both a server and client address or network.\n">&2;
+	printf " it is strongly recommended to supply both a server and client address or network.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --client-is-reusing-ip-address\n">&2;
-	printf "  Note: provide this flag if the client is reusing a previously allocated IP address\n">&2;
+	printf "  provide this flag if the client is reusing a previously allocated IP address\n">&2;
 	printf "\n">&2;
 	printf " Optional: --transaction-id x (where x is 0-4,294,967,296)\n">&2;
-	printf "  Note: the identifier of the DHCP transaction.\n">&2;
+	printf "  the identifier of the DHCP transaction.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --dhcp-service-uid X (where X is 1-65535)\n">&2;
-	printf "  Note: it is stronly recommended to supply the user ID that is requested to the DHCP server 'service' listed in the /etc/passwd file.\n">&2;
-	printf "  Note: without this restriction, DHCP ACK packets are permitted to any program.\n";
+	printf "  it is stronly recommended to supply the user ID that is requested to the DHCP server 'service' listed in the /etc/passwd file.\n">&2;
+	printf "  without this restriction, DHCP ACK packets are permitted to any program.\n";
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
-	printf "  Note: causes the program to skip validating inputs (if you know they are valid).\n">&2;
+	printf "  causes the program to skip validating inputs (if you know they are valid).\n">&2;
 	printf "\n">&2;
 	printf " Optional: --only-validate\n">&2;
-	printf "  Note: causes the program to exit after validating inputs.\n">&2;
+	printf "  causes the program to exit after validating inputs.\n">&2;
 	printf "\n">&2;
 }
 

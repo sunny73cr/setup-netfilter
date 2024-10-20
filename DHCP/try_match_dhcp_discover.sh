@@ -52,22 +52,22 @@ print_usage() {
 	printf "Parameters:\n">&2;
 	printf "\n">&2;
 	printf " Optional: --client-mac-address XX:XX:XX:XX:XX:XX (where X is a-f, or A-F, or 0-9 - hexadecimal)\n">&2;
-	printf "  Note: it is strongly recommended to supply the client mac address, if you know it.\n">&2;
+	printf "  it is strongly recommended to supply the client mac address, if you know it.\n">&2;
 	printf "\n">&2;
-	printf " Note: it is strongly recommended to supply both a server and client address or network.\n">&2;
+	printf " it is strongly recommended to supply both a server and client address or network.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --transaction-id x (where x is 0-4,294,967,296)\n">&2;
-	printf "  Note: the identifier of the DHCP transaction.\n">&2;
+	printf "  the identifier of the DHCP transaction.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --dhcp-service-uid X (where X is 1-65535)\n">&2;
-	printf "  Note: it is stronly recommended to supply the user ID that is assigned to the DHCP server 'service' listed in the /etc/passwd file.\n">&2;
-	printf "  Note: without this restriction, DHCP DISCOVER packets are permitted to any program.\n";
+	printf "  it is stronly recommended to supply the user ID that is assigned to the DHCP server 'service' listed in the /etc/passwd file.\n">&2;
+	printf "  without this restriction, DHCP DISCOVER packets are permitted to any program.\n";
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
-	printf "  Note: causes the program to skip validating inputs (if you know they are valid).\n">&2;
+	printf "  causes the program to skip validating inputs (if you know they are valid).\n">&2;
 	printf "\n">&2;
 	printf " Optional: --only-validate\n">&2;
-	printf "  Note: causes the program to exit after validating inputs.\n">&2;
+	printf "  causes the program to exit after validating inputs.\n">&2;
 	printf "\n">&2;
 }
 
