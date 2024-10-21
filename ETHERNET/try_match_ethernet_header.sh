@@ -5,21 +5,21 @@ if [ -z "$ENV_SETUP_NFT" ]; then printf "setup-netfilter: set ENV_SETUP_NFT to t
 DEPENDENCY_PATH_VALIDATE_ETHER_TYPE_ID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_layer_2_protocol_id_is_valid.sh";
 
 if [ ! -x $DEPENDENCY_PATH_VALIDATE_ETHER_TYPE_ID ]; then
-	printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_ETHER_TYPE_ID\" is missing or is not executable." 1>&2;
+	printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_ETHER_TYPE_ID\" is missing or is not executable.">&2;
 	exit 3;
 fi
 
 DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_mac_address_is_valid.sh";
 
 if [ ! -x $DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS ]; then
-	printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS\" is missing or is not executable." 1>&2;
+	printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS\" is missing or is not executable.">&2;
 	exit 3;
 fi
 
 DEPENDENCY_PATH_VALIDATE_VLAN_ID="$ENV_SETUP_NFT/SCRIPT_HELPERS/check_vlan_id_is_valid.sh";
 
 if [ ! -x $DEPENDENCY_PATH_VALIDATE_VLAN_ID ]; then
-	printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_VLAN_ID\" is missing or is not executable." 1>&2;
+	printf "$0: dependency: \"$DEPENDENCY_PATH_VALIDATE_VLAN_ID\" is missing or is not executable.">&2;
 	exit 2;
 fi
 
@@ -35,7 +35,11 @@ print_description_then_exit() {
 if [ "$1" = "-e" ]; then print_description_then_exit; fi
 
 print_dependencies() {
+	printf "Dependencies: \n">&2;
 	printf "printf\n">&2;
+	printf "$DEPENDENCY_PATH_VALIDATE_ETHER_TYPE_ID\n">&2;
+	printf "$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS\n">&2;
+	printf "$DEPENDENCY_PATH_VALIDATE_VLAN_ID\n">&2;
 	printf "\n">&2;
 }
 
@@ -48,24 +52,11 @@ if [ "$1" = "-d" ]; then print_dependencies_then_exit; fi
 
 print_usage() {
 	printf "Usage: $0 <parameters>\n">&2;
-	printf " -e\n">&2;
-	printf " calling the program with the '-e' flag prints an explanation of the scripts' function or purpose.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -h\n">&2;
-	printf " calling the program with the '-h' flag prints an explanation of the scripts' parameters and their effect.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -d\n">&2;
-	printf " callling the program with the '-d' flags prints a (new-line separated, and terminated) list of the programs' dependencies (what it needs to run).\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -ehd\n">&2;
-	printf " calling the program with the '-ehd' flag (or, ehd-ucate me) prints the description, the dependencies list, and the usage text.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " Note that calling all scripts in a project with the flag '-ehd', then concatenating their output using file redirection (string > file),\n">&2;
-	printf " Is a nice and easy way to maintain documentation for your project.\n">&2;
+	printf "Flags used by themselves: \n">&2;
+	printf " -e (prints an explanation of the functions' purpose) (exit code 2)\n">&2;
+	printf " -h (prints an explanation of the functions' available parameters, and their effect) (exit code 2)\n">&2;
+	printf " -d (prints the functions' dependencies: newline delimited list) (exit code 2)\n">&2
+	printf " -ehd (prints the above three) (exit code 2)\n">&2;
 	printf "\n">&2;
 	printf "Parameters:\n">&2;
 	printf "\n">&2;
@@ -81,10 +72,8 @@ print_usage() {
 	printf " Note: you may supply a list of VLAN QinQ ID's (up to a limit of 4)\n">&2;
 	printf " Note: to do so, the value of --vlan-id-qinq should be a comma separated list of values. Do not terminate the list with a comma.\n">&2;
 	printf " Note: the list should be supplied in 'outermost to innermost tag' order.\n">&2;
-	printf " Note: you must supply the \"parent\" tag to confirm a \"child tag\".\n">&2;
 	printf " Note: for example, your packet is tagged with S-Tag 2 (54), S-Tag 1 (76), and C-Tag (865).\n">&2;
 	printf " Note: to confirm presense of tag 76, you must also supply tag 54 in the list.\n">&2;
-	printf "\n">&2;
 	printf "\n">&2;
 	printf " Optional: --vlan-id-dot1q x (where x is 0-4096).\n">&2;
 	printf "  Note: commonly, this value will not be 0, nor 4096.\n">&2;
@@ -92,12 +81,12 @@ print_usage() {
 	printf "  Note: this is typically the parameter you are looking for when restricting to a \"VLAN\".\n">&2;
 	printf "  Note: the Dot1Q ID indicates the \"inner layer\" VLAN in a multi-level segmented environment.\n">&2;
 	printf "\n">&2;
-	printf " Note: it is strongly recommended to supply the QinQ and Dot1Q VLAN ID's relevant to this signature if they are configured.\n">&2;
+	printf " Note: it is required to supply the QinQ and Dot1Q VLAN ID's relevant to this signature if they are configured within the network.\n">&2;
 	printf "\n">&2;
-	printf " Optional: --source-address-mac XX:XX:XX:XX:XX:XX (where X is 0-9, a-f, or A-F; hexadecimal).\n">&2;
+	printf " Optional: --source-mac-address XX:XX:XX:XX:XX:XX (where X is 0-9, a-f, or A-F; hexadecimal).\n">&2;
 	printf "  Note: it is strongly recommended to supply the source MAC address, if you know it.\n">&2;
 	printf "\n">&2;
-	printf " Optional: --destination-address-mac XX:XX:XX:XX:XX:XX (where X is 0-9, a-f, or A-F; hexadecimal).\n">&2;
+	printf " Optional: --destination-mac-address XX:XX:XX:XX:XX:XX (where X is 0-9, a-f, or A-F; hexadecimal).\n">&2;
 	printf "  Note: it is strongly recommended to supply the destination MAC address, if you know it.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --skip-validation\n">&2;
@@ -121,8 +110,8 @@ if [ "$1" = "-ehd" ]; then print_description; printf "\n">&2; print_dependencies
 ETHER_TYPE_ID="";
 VLAN_ID_QINQ="";
 VLAN_ID_DOT1Q="";
-SOURCE_ADDRESS_MAC="";
-DESTINATION_ADDRESS_MAC="";
+SOURCE_MAC_ADDRESS="";
+DESTINATION_MAC_ADDRESS="";
 
 #FLAGS:
 SKIP_VALIDATION=0;
@@ -169,24 +158,24 @@ while true; do
 			fi
 		;;
 
-		--source-address-mac)
+		--source-mac-address)
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			elif [ -z "$2" ]; then
 				print_usage_then_exit;
 			else
-				SOURCE_ADDRESS_MAC=$2;
+				SOURCE_MAC_ADDRESS=$2;
 				shift 2;
 			fi
 		;;
 
-		--destination-address-mac)
+		--destination-mac-address)
 			if [ $# -lt 2 ]; then
 				print_usage_then_exit;
 			elif [ -z "$2" ]; then
 				print_usage_then_exit;
 			else
-				DESTINATION_ADDRESS_MAC=$2;
+				DESTINATION_MAC_ADDRESS=$2;
 				shift 2;
 			fi
 		;;
@@ -221,150 +210,213 @@ done;
 if [ $SKIP_VALIDATION -eq 1 ] && [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
 if [ $SKIP_VALIDATION -eq 0 ]; then
-	$SCRIPT_DEPENDENCY_PATH_VALIDATE_ETHER_TYPE_ID --id $ETHER_TYPE_ID;
+	$DEPENDENCY_PATH_VALIDATE_ETHER_TYPE_ID --id $ETHER_TYPE_ID;
 	case $? in
 		0) ;;
 		1) printf "\nInvalid --ether-type-id. "; print_usage_then_exit; ;;
-		*) printf "$0: dependency \"$SCRIPT_DEPENDENCY_PATH_VALIDATE_ETHER_TYPE_ID\" produced a failure exit code."; exit 4; ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_VALIDATE_ETHER_TYPE_ID\" produced a failure exit code ($?)."; exit 4; ;;
 	esac
 
+	if [ -n "$VLAN_ID_QINQ" ] && [ -z "$VLAN_ID_DOT1Q" ]; then
+		printf "\nIf --vlan-id-qinq is present, --vlan-id-dot1q must be present. ">&2;
+		print_usage_then_exit;
+	fi
+
 	if [ -n "$VLAN_ID_QINQ" ]; then
-		if [ -n "$(echo $VLAN_ID_QINQ | grep '[,]\+')" ]; then
+		#If VLAN_ID_QINQ matches the form (vlan,){1,3}vlan, it is a csv of vlans.
+		if [ -n "$(echo $VLAN_ID_QINQ | grep '^\([0-9]\{1,4\},\)\{1,3\}[0-9]\{1,4\}$')" ]; then
 			#More than one QinQ tag
 			i=1;
 			while true; do
 				TAG=$(echo $VLAN_ID_QINQ | cut -d ',' -f $i);
 				if [ -z "$TAG" ]; then break; fi
 
-				$SCRIPT_DEPENDENCY_PATH_VALIDATE_VLAN_ID --id $TAG;
+				$DEPENDENCY_PATH_VALIDATE_VLAN_ID --id $TAG;
 				case $? in
 					0) ;;
-					1) printf "\nInvalid --vlan-id-qinq (value #$i). "; print_usage_then_exit; ;;
-					*) printf "$0: dependency \"$SCRIPT_DEPENDENCY_PATH_VALIDATE_VLAN_ID\" produced a failure exit code."; exit 4; ;;
+					1) printf "\nInvalid --vlan-id-qinq (value \#$i). ">&2; print_usage_then_exit; ;;
+					*) printf "$0: dependency \"$DEPENDENCY_PATH_VALIDATE_VLAN_ID\" produced a failure exit code ($?)."; exit 4; ;;
 				esac
 
 				i=$(($i+1));
 			done
 		else
+			if [ -n "$(echo $VLAN_ID_QINQ | grep ',')" ]; then
+			#contains a comma
+				printf "\nInvalid --vlan-id-qinq (bad CSV). ">&2;
+				print_usage_then_exit;
+			else
 			#Just one QinQ tag
-			$SCRIPT_DEPENDENCY_PATH_VALIDATE_VLAN_ID --id $VLAN_ID_QINQ;
-			case $? in
-				0) ;;
-				1) printf "\nInvalid --vlan-id-qinq. "; print_usage_then_exit; ;;
-				*) printf "$0: dependency \"$SCRIPT_DEPENDENCY_PATH_VALIDATE_VLAN_ID\" produced a failure exit code."; exit 4; ;;
-			esac
+				$DEPENDENCY_PATH_VALIDATE_VLAN_ID --id $VLAN_ID_QINQ;
+				case $? in
+					0) ;;
+					1) printf "\nInvalid --vlan-id-qinq. ">&2; print_usage_then_exit; ;;
+					*) printf "$0: dependency \"$DEPENDENCY_PATH_VALIDATE_VLAN_ID\" produced a failure exit code ($?)."; exit 4; ;;
+				esac
+			fi
 		fi
 	fi
 
 	if [ -n "$VLAN_ID_DOT1Q" ]; then
-		$SCRIPT_DEPENDENCY_PATH_VALIDATE_VLAN_ID --id $VLAN_ID_DOT1Q;
+		$DEPENDENCY_PATH_VALIDATE_VLAN_ID --id $VLAN_ID_DOT1Q;
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --vlan-id-dot1q. "; print_usage_then_exit; ;;
-			*) printf "$0: dependency \"$SCRIPT_DEPENDENCY_PATH_VALIDATE_VLAN_ID\" produced a failure exit code."; exit 4; ;;
+			1) printf "\nInvalid --vlan-id-dot1q. ">&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency \"$DEPENDENCY_PATH_VALIDATE_VLAN_ID\" produced a failure exit code ($?)."; exit 4; ;;
 		esac
 	fi
 
-	if [ -n "$SOURCE_ADDRESS" ]; then
-		$SCRIPT_DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS --address $SOURCE_ADDRESS;
+	if [ -n "$SOURCE_MAC_ADDRESS" ]; then
+		$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS --address $SOURCE_MAC_ADDRESS;
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --source-address-mac. "; print_usage_then_exit; ;;
-			*) printf "$0: dependency \"$SCRIPT_DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS\" produced a failure exit code."; exit 4; ;;
+			1) printf "\nInvalid --source-mac-address. ">&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency \"$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS\" produced a failure exit code ($?)."; exit 4; ;;
 		esac
 	fi
 
-	if [ -n "$DESTINATION_ADDRESS" ]; then
-		$SCRIPT_DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS --address $DESTINATION_ADDRESS;
+	if [ -n "$DESTINATION_MAC_ADDRESS" ]; then
+		$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS --address $DESTINATION_MAC_ADDRESS;
 		case $? in
 			0) ;;
-			1) printf "\nInvalid --destination-address-mac. "; print_usage_then_exit; ;;
-			*) printf "$0: dependency \"$SCRIPT_DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS\" produced a failure exit code."; exit 4; ;;
+			1) printf "\nInvalid --destination-mac-address. ">&2; print_usage_then_exit; ;;
+			*) printf "$0: dependency \"$DEPENDENCY_PATH_VALIDATE_MAC_ADDRESS\" produced a failure exit code ($?)."; exit 4; ;;
 		esac
 	fi
 fi
 
 if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
+#If Service VLANS present, count them.
+QINQ_TAG_COUNT=0;
+if [ -n "$VLAN_ID_QINQ" ] && [ -n "$(echo $VLAN_ID_QINQ | grep '^\([0-9]\{1,4\},\)\{1,3\}[0-9]\{1,4\}$')" ]; then
+	#Remove every character except the delimeter
+	#(match not comma, replace with nothing, globally)
+	VLAN_ID_QINQ_DELIMITERS=$(echo $VLAN_ID_QINQ | sed 's/[^,]\{1,3\}//g');
 
-if [ -n "$VLAN_ID_QINQ" ]; then
-	printf "\\t\\t#Confirm the presence and order of each QinQ VLAN tag.";
-
-	if [ -n "$(echo $VLAN_ID_QINQ | grep '[,]\+')" ]; then
-		#More than one QinQ tag
-
-		#Remove every character except the delimeter
-		#(match not comma, replace with nothing, globally)
-		VLAN_ID_QINQ_DELIMITERS-$(echo $VLAN_ID_QINQ | sed 's/[^,]*//g');
-
-		#The length of the list is the number of delimiters plus one.
-		QINQ_TAG_COUNT=$((${#VLAN_ID_QINQ_DELIMITERS}+1));
-
-		#Iterate and confirm each tag is present, and in the supplied order.
-		i=1;
-		#The tags begin after the destination and source MAC addresses: 96 bits offset.
-		PACKET_POS=96;
-		while true; do
-			TAG=$(echo $VLAN_ID_QINQ | cut -d ',' -f $i);
-			if [ -z "$TAG" ]; then break; fi
-
-			#Confirm the S-Tag is the ethertype 88A8 (for 802.1AD).
-			printf "\\t\\t@ll,$PACKET_POS,16 0x88A8 \\\\\n";
-			#Confirm the S-Tag is what is required at this position.
-			printf "\\t\\t@ll,$(($PACKET_POS+16)),16 $TAG \\\\\n";
-
-			i=$(($i+1));
-			PACKET_POS=$(($PACKET_POS+32));
-		done;
-
-		#now, confirm the Dot1Q tag, if present.
-		if [ -n "$VLAN_ID_DOT1Q" ]; then
-			#Confirm the C-Tag is the ethertype 8100 (for 802.1Q).
-			printf "\\t\\t@ll,$PACKET_POS,16 0x8100 \\\\\n";
-			#Confirm the S-Tag is what is required at this position.
-			printf "\\t\\t@ll,$(($PACKET_POS+16)),16 $VLAN_ID_DOT1Q \\\\\n";
-		fi
-	else
-		#Just one QinQ tag
-		#QinQ tag begins after destination and source mac address (96 bits)
-
-		#Confirm the S-Tag is the ethertype 88A8 (for 802.1AD).
-		printf "\\t\\t@ll,96,16 0x88A8 \\\\\n";
-		#Confirm the S-Tag is what is required at this position.
-		printf "\\t\\t@ll,112,16 $VLAN_ID_QINQ \\\\\n";
-
-		if [ -n "$VLAN_ID_DOT1Q" ]; then
-			#Confirm the C-Tag is the ethertype 8100 (for 802.1Q).
-			printf "\\t\\t@ll,128,16 0x8100 \\\\\n";
-			#Confirm the C-Tag is what is required at this position.
-			printf "\\t\\t@ll,144,16 $VLAN_ID_DOT1Q \\\\\n";
-		fi
-	fi
+	#The length of the list is the number of delimiters plus one.
+	QINQ_TAG_COUNT=$((${#VLAN_ID_QINQ_DELIMITERS}+1));
 fi
 
+OFFSET_MARKER="ll";
+BIT_OFFSET_HEADER_BEGIN=0;
+BIT_OFFSET_DESTINATION_MAC=$BIT_OFFSET_HEADER_BEGIN;
+BIT_OFFSET_SOURCE_MAC=$(($BIT_OFFSET_DESTINATION_MAC+48));
+BIT_OFFSET_VLAN_QINQ_1=-1;
+BIT_OFFSET_VLAN_QINQ_2=-1;
+BIT_OFFSET_VLAN_QINQ_3=-1;
+BIT_OFFSET_VLAN_QINQ_4=-1;
+
+if [ $QINQ_TAG_COUNT -gt 0 ]; then
+	VLAN_QINQ_1=$(echo $VLAN_ID_QINQ | cut -d ',' -f 1);
+	VLAN_QINQ_2=$(echo $VLAN_ID_QINQ | cut -d ',' -f 2);
+	VLAN_QINQ_3=$(echo $VLAN_ID_QINQ | cut -d ',' -f 3);
+	VLAN_QINQ_4=$(echo $VLAN_ID_QINQ | cut -d ',' -f 4);
+fi
+
+case $QINQ_TAG_COUNT in
+	0)
+		if [ -n "$VLAN_ID_DOT1Q" ]; then
+			BIT_OFFSET_VLAN_8021Q=$(($BIT_OFFSET_SOURCE_MAC+48));
+			BIT_OFFSET_ETHERTYPE=$(($BIT_OFFSET_VLAN_8021Q+32));
+			BIT_OFFSET_PAYLOAD=$(($BIT_OFFSET_ETHERTYPE+16));
+		else
+			BIT_OFFSET_ETHERTYPE=$(($BIT_OFFSET_SOURCE_MAC+48));
+			BIT_OFFSET_PAYLOAD=$(($BIT_OFFSET_ETHERTYPE+16));
+		fi
+	;;
+	1)
+		BIT_OFFSET_VLAN_QINQ_1=$(($BIT_OFFSET_SOURCE_MAC+48));
+		if [ -n "$VLAN_ID_DOT1Q" ]; then
+			BIT_OFFSET_VLAN_8021Q=$(($BIT_OFFSET_VLAN_QINQ_1+32));
+			BIT_OFFSET_ETHERTYPE=$(($BIT_OFFSET_VLAN_8021Q+32));
+			BIT_OFFSET_PAYLOAD=$(($BIT_OFFSET_ETHERTYPE+16));
+		fi
+	;;
+	2)
+		BIT_OFFSET_VLAN_QINQ_1=$(($BIT_OFFSET_SOURCE_MAC+48));
+		BIT_OFFSET_VLAN_QINQ_2=$(($BIT_OFFSET_VLAN_QINQ_1+32));
+		if [ -n "$VLAN_ID_DOT1Q" ]; then
+			BIT_OFFSET_VLAN_8021Q=$(($BIT_OFFSET_VLAN_QINQ_2+32));
+			BIT_OFFSET_ETHERTYPE=$(($BIT_OFFSET_VLAN_8021Q+32));
+			BIT_OFFSET_PAYLOAD=$(($BIT_OFFSET_ETHERTYPE+16));
+		fi
+	;;
+	3)
+		BIT_OFFSET_VLAN_QINQ_1=$(($BIT_OFFSET_SOURCE_MAC+48));
+		BIT_OFFSET_VLAN_QINQ_2=$(($BIT_OFFSET_VLAN_QINQ_1+32));
+		BIT_OFFSET_VLAN_QINQ_3=$(($BIT_OFFSET_VLAN_QINQ_2+32));
+		if [ -n "$VLAN_ID_DOT1Q" ]; then
+			BIT_OFFSET_VLAN_8021Q=$(($BIT_OFFSET_VLAN_QINQ_3+32));
+			BIT_OFFSET_ETHERTYPE=$(($BIT_OFFSET_VLAN_8021Q+32));
+			BIT_OFFSET_PAYLOAD=$(($BIT_OFFSET_ETHERTYPE+16));
+		fi
+	;;
+	4)
+		BIT_OFFSET_VLAN_QINQ_1=$(($BIT_OFFSET_SOURCE_MAC+48));
+		BIT_OFFSET_VLAN_QINQ_2=$(($BIT_OFFSET_VLAN_QINQ_1+32));
+		BIT_OFFSET_VLAN_QINQ_3=$(($BIT_OFFSET_VLAN_QINQ_2+32));
+		BIT_OFFSET_VLAN_QINQ_4=$(($BIT_OFFSET_VLAN_QINQ_3+32));
+		if [ -n "$VLAN_ID_DOT1Q" ]; then
+			BIT_OFFSET_VLAN_8021Q=$(($BIT_OFFSET_VLAN_QINQ_4+32));
+			BIT_OFFSET_ETHERTYPE=$(($BIT_OFFSET_VLAN_8021Q+32));
+			BIT_OFFSET_PAYLOAD=$(($BIT_OFFSET_ETHERTYPE+16));
+		fi
+	;;
+esac
+
+if [ -n "$DESTINATION_MAC_ADDRESS" ]; then
+	#nft expects a hexadecimal number, prefix with 0x and strip colons
+	DESTINATION_MAC_CLEANED="0x$(echo $DESTINATION_MAC_ADDRESS | sed 's/://g')";
+	printf "\\t#Match Destination MAC address\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_DESTINATION_MAC,48 $DESTINATION_MAC_CLEANED \\\\\n";
+else
+	printf "\\t#Destination MAC Address unrestricted - Please consider the security implications.\n";
+fi
+
+if [ -n "$SOURCE_MAC_ADDRESS" ]; then
+	#nft expects a hexadecimal number, prefix with 0x and strip colons
+	SOURCE_MAC_CLEANED="0x$(echo $SOURCE_MAC_ADDRESS | sed 's/://g')";
+	printf "\\t#Match Source MAC address\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_SOURCE_MAC,48 $SOURCE_MAC_CLEANED \\\\\n";
+else
+	printf "\\t#Source MAC Address unrestricted - Please consider the security implications.\n";
+fi
+
+if [ $QINQ_TAG_COUNT -gt 0 ]; then
+	printf "\\t#Match QINQ VLAN Tags\n";
+fi
+case $QINQ_TAG_COUNT in
+	1)
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_VLAN_QINQ_1,32 $VLAN_QINQ_1 \\\\\n";
+	;;
+	2)
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_VLAN_QINQ_1,32 $VLAN_QINQ_1 \\\\\n";
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_VLAN_QINQ_2,32 $VLAN_QINQ_2 \\\\\n";
+	;;
+	3)
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_VLAN_QINQ_1,32 $VLAN_QINQ_1 \\\\\n";
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_VLAN_QINQ_2,32 $VLAN_QINQ_2 \\\\\n";
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_VLAN_QINQ_3,32 $VLAN_QINQ_3 \\\\\n";
+	;;
+	4)
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_VLAN_QINQ_1,32 $VLAN_QINQ_1 \\\\\n";
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_VLAN_QINQ_2,32 $VLAN_QINQ_2 \\\\\n";
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_VLAN_QINQ_3,32 $VLAN_QINQ_3 \\\\\n";
+		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_VLAN_QINQ_4,32 $VLAN_QINQ_4 \\\\\n";
+	;;
+esac
+
 if [ -n "$VLAN_ID_DOT1Q" ]; then
-	printf "\\t\\t#Confirm the presence and type of the VLAN tag."
-	printf "\\t\\tvlan id $VLAN_ID_DOT1Q\n";
-	printf "\\t\\tvlan type 0x8100 \\\\\n";
+	printf "\\t#Match VLAN ID DOT1Q\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_VLAN_8021Q,32 $VLAN_ID_DOT1Q \\\\\n";
 fi
 
 if [ -n "$ETHER_TYPE_ID" ]; then
-	printf "\\t\\t#Confirm the ether type\n"
-	printf "\\t\\tether type $ETHER_TYPE_ID \\\\\n";
-fi
-
-printf "\\t\\t#Confirm the source MAC address.\n";
-if [ -n "$SOURCE_ADDRESS" ]; then
-	printf "\\t\\tether saddr $SOURCE_ADDRESS \\\\\n";
+	printf "\\t#Match Ether Type\n"
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ETHERTYPE,16 $ETHER_TYPE_ID \\\\\n";
 else
-	printf "\\t\\t#ether saddr ANY - Please consider the security implications.\n";
-fi
-
-printf "\\t\\t#Confirm the destination MAC address.\n";
-if [ -n "$DESTINATION_ADDRESS" ]; then
-	printf "\\t\\tether daddr $DESTINATION_ADDRESS \\\\\n";
-else
-	printf "\\t\\t#ether daddr ANY - Please consider the security implications.\n";
+	printf "\\t#Ether Type is unrestricted - consider the security implications.\n";
 fi
 
 exit 0;
