@@ -26,26 +26,13 @@ if [ "$1" = "-d" ]; then print_dependencies_then_exit; fi
 
 print_usage() {
 	printf "Usage: $0 <arguments>\n">&2;
-	printf " -e\n">&2;
-	printf " calling the program with the '-e' flag prints an explanation of the scripts' function or purpose.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
+	printf "Flags used by themselves: \n">&2;
+	printf " -e (prints an explanation of the functions' purpose) (exit code 2)\n">&2;
+	printf " -h (prints an explanation of the functions' available parameters, and their effect) (exit code 2)\n">&2;
+	printf " -d (prints the functions' dependencies: newline delimited list) (exit code 2)\n">&2
+	printf " -ehd (prints the above three) (exit code 2)\n">&2;
 	printf "\n">&2;
-	printf " -h\n">&2;
-	printf " calling the program with the '-h' flag prints an explanation of the scripts' parameters and their effect.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -d\n">&2;
-	printf " callling the program with the '-d' flags prints a (new-line separated, and terminated) list of the programs' dependencies (what it needs to run).\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -ehd\n">&2;
-	printf " calling the program with the '-ehd' flag (or, ehd-ucate me) prints the description, the dependencies list, and the usage text.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " Note that calling all scripts in a project with the flag '-ehd', then concatenating their output using file redirection (string > file),\n">&2;
-	printf " Is a nice and easy way to maintain documentation for your project.">&2;
-	printf "\n">&2;
-	printf "\nParameters:">&2;
+	printf "Parameters:\n">&2;
 	printf "\n">&2;
 	printf "  Optional: --arguments string (comma delimited/separated list).\n">&2;
 	printf "  Optional: --flags string (comma delimited/separated list).\n">&2;
@@ -89,25 +76,25 @@ while true; do
 	case "$1" in
 		--arguments)
 			if [ $# -lt 2 ]; then
-				echo "here"
+				printf "\nNot enough arguments (value for $1 is missing.) ">&2;
 				print_usage_then_exit;
 			elif [ -z "$2" ]; then
-				echo "there"
+				printf "\nNot enough arguments (value for $1 is empty.) ">&2;
 				print_usage_then_exit;
 			else
-				ARGUMENTS="$2";
+				ARGUMENTS=$2;
 				shift 2;
 			fi
 		;;
 		--flags)
 			if [ $# -lt 2 ]; then
-				echo "everywhere"
+				printf "\nNot enough arguments (value for $1 is missing.) ">&2;
 				print_usage_then_exit;
 			elif [ -z "$2" ]; then
-				echo "nowhere"
+				printf "\nNot enough arguments (value for $1 is empty.) ">&2;
 				print_usage_then_exit;
 			else
-				FLAGS="$2";
+				FLAGS=$2;
 				shift 2;
 			fi
 		;;
@@ -178,8 +165,10 @@ if [ -n "$ARGUMENTS_CLEANED" ]; then
 	if [ "$(echo \"$ARGUMENTS_CLEANED\" | grep '[,]\+')" = "" ]; then
 			printf "\t\t--$ARGUMENTS_CLEANED)\n";
 			printf "\t\t\tif [ \$# -lt 2 ]; then\n";
+			printf "\t\t\t\tprintf \"\\\nNot enough arguments (value for \$1 is missing.) \">&2;\n";
 			printf "\t\t\t\tprint_usage_then_exit;\n";
 			printf "\t\t\telif [ -z \"\$2\" ]; then\n";
+			printf "\t\t\t\tprintf \"\\\nNot enough arguments (value for \$1 is empty.) \">&2;\n";
 			printf "\t\t\t\tprint_usage_then_exit;\n";
 			printf "\t\t\telse\n";
 			printf "\t\t\t\t$ARGUMENTS_CLEANED=\$2;\n";
@@ -194,8 +183,10 @@ if [ -n "$ARGUMENTS_CLEANED" ]; then
 
 			printf "\t\t--$ARG)\n";
 			printf "\t\t\tif [ \$# -lt 2 ]; then\n";
+			printf "\t\t\t\tprintf \"\\\nNot enough arguments (value for \$1 is missing.) \">&2;\n";
 			printf "\t\t\t\tprint_usage_then_exit;\n";
 			printf "\t\t\telif [ -z \"\$2\" ]; then\n";
+			printf "\t\t\t\tprintf \"\\\nNot enough arguments (value for \$1 is empty.) \">&2;\n";
 			printf "\t\t\t\tprint_usage_then_exit;\n";
 			printf "\t\t\telse\n";
 			printf "\t\t\t\t$ARG=\$2;\n";
