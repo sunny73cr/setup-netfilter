@@ -14,6 +14,7 @@ print_description_then_exit() {
 if [ "$1" = "-e" ]; then print_description_then_exit; fi
 
 print_dependencies() {
+	printf "Dependencies: \n">&2;
 	printf "printf\n">&2;
 	printf "echo\n">&2;
 	printf "grep\n">&2;
@@ -29,24 +30,11 @@ if [ "$1" = "-d" ]; then print_dependencies_then_exit; fi
 
 print_usage() {
 	printf "Usage: $0 <parameters>\n">&2;
-	printf " -e\n">&2;
-	printf " calling the program with the '-e' flag prints an explanation of the scripts' function or purpose.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -h\n">&2;
-	printf " calling the program with the '-h' flag prints an explanation of the scripts' parameters and their effect.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -d\n">&2;
-	printf " callling the program with the '-d' flags prints a (new-line separated, and terminated) list of the programs' dependencies (what it needs to run).\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -ehd\n">&2;
-	printf " calling the program with the '-ehd' flag (or, ehd-ucate me) prints the description, the dependencies list, and the usage text.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " Note that calling all scripts in a project with the flag '-ehd', then concatenating their output using file redirection (string > file),\n">&2;
-	printf " Is a nice and easy way to maintain documentation for your project.\n">&2;
+	printf "Flags used by themselves: \n">&2;
+	printf " -e (prints an explanation of the functions' purpose) (exit code 2)\n">&2;
+	printf " -h (prints an explanation of the functions' available parameters, and their effect) (exit code 2)\n">&2;
+	printf " -d (prints the functions' dependencies: newline delimited list) (exit code 2)\n">&2
+	printf " -ehd (prints the above three) (exit code 2)\n">&2;
 	printf "\n">&2;
 	printf "Parameters:\n">&2;
 	printf "\n">&2;
@@ -70,22 +58,44 @@ print_usage() {
 	printf "   15 - Precedence cutoff in effect (precedence of datagram is below the level set by the network administrators)\n">&2;
 	printf "\n">&2;
 	printf " Optional: --checksum x (where x is 0-65535)\n">&2;
-	printf "  Note: useful if you know the checksum of an already sent packet.\n">&2;
+	printf "  Restrict the checksum to a specific value.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --checksum-min x (where x is 0-65535)\n">&2;
+	printf "  Restrict the checksum to a minimum.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --checksum-max x (where x is 0-65535)\n">&2;
+	printf "  Restrict the checksum to a maximum.\n">&2;
+	printf "\n">&2;
+	printf " You must not combine --checksum with --checksum-min or --checksum-max\n">&2;
+	printf " You are not required to provide both --checksum-min and --checksum-max\n">&2;
+	printf " When supplied together, --checksum-min must be less than --checksum-max\n">&2;
 	printf "\n">&2;
 	printf " Optional: --length x (where x is 0-255)\n">&2;
-	printf "  Note: the length of the payload in 32-bit words (4 byte chunks)\n">&2;
-	printf "  Note: the length field is not always present.\n">&2;
+	printf "  Restrict the length to a specific number of bytes.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --length-min x (where x is 0-255)\n">&2;
+	printf "  Restrict the length to a minimum number of bytes.\n">&2;
 	printf "\n">&2;
 	printf " Optional: --length-max x (where x is 0-255)\n">&2;
+	printf "  Restrict the length to a maximum numebr of bytes.\n">&2;
 	printf "\n">&2;
-	printf " Note: you are not required to supply both a min and max length\n">&2;
-	printf " Note: you cannot combine an exact length with a min or max bound restriction\n">&2;
-	printf " Note: the match is not optimistic; where length is filtered, packets without a length will not be matched.\n">&2;
+	printf " You must not combine --length with --length-min or --length-max\n">&2;
+	printf " You are not required to provide both --length-min and --length-max\n">&2;
+	printf " When supplied together, --length-min must be less than --length-max\n">&2;
 	printf "\n">&2;
-	printf " Optional: --next-hop-mtu x (0-65535)\n">&2;
-	printf "  Note: contains the MTU of the next-hop network is the code is 4.\n">&2;
+	printf " Optional: --next-hop-mtu x (where x is 0-65535)\n">&2;
+	printf "  Contains the MTU of the next-hop network if the code is 4 (Payload too big, Dont Fragment bit is set).\n">&2;
+	printf "  Restrict the next-hop-mtu to a specific number of bytes.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --next-hop-mtu-min x (where x is 0-65535)\n">&2;
+	printf "  Restrict the next-hop-mtu to a minimum number of bytes.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --next-hop-mtu-max x (where x is 0-65535)\n">&2;
+	printf "  Restrict the next-hop-mtu to a maximum numebr of bytes.\n">&2;
+	printf "\n">&2;
+	printf " You must not combine --next-hop-mtu with --next-hop-mtu-min or --next-hop-mtu-max\n">&2;
+	printf " You are not required to provide both --next-hop-mtu-min and --next-hop-mtu-max\n">&2;
+	printf " When supplied together, --next-hop-mtu-min must be less than --next-hop-mtu-max\n">&2;
 	printf "\n">&2;
 }
 
@@ -101,10 +111,14 @@ if [ "$1" = "-ehd" ]; then print_description; printf "\n">&2; print_dependencies
 #ARGUMENTS:
 CODE="";
 CHECKSUM="";
+CHECKSUM_MIN="";
+CHECKSUM_MAX="";
 LENGTH="";
 LENGTH_MIN="";
 LENGTH_MAX="";
 NEXT_HOP_MTU="";
+NEXT_HOP_MTU_MIN="";
+NEXT_HOP_MTU_MAX="";
 
 #FLAGS:
 SKIP_VALIDATION=0;
@@ -136,6 +150,28 @@ while true; do
 				print_usage_then_exit;
 			else
 				CHECKSUM=$2;
+				shift 2;
+			fi
+		;;
+
+		--checksum-min)
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ -z "$2" ]; then
+				print_usage_then_exit;
+			else
+				CHECKSUM_MIN=$2;
+				shift 2;
+			fi
+		;;
+
+		--checksum-max)
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ -z "$2" ]; then
+				print_usage_then_exit;
+			else
+				CHECKSUM_MAX=$2;
 				shift 2;
 			fi
 		;;
@@ -180,6 +216,28 @@ while true; do
 				print_usage_then_exit;
 			else
 				NEXT_HOP_MTU=$2;
+				shift 2;
+			fi
+		;;
+
+		--next-hop-mtu-min)
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ -z "$2" ]; then
+				print_usage_then_exit;
+			else
+				NEXT_HOP_MTU_MIN=$2;
+				shift 2;
+			fi
+		;;
+
+		--next-hop-mtu-max)
+			if [ $# -lt 2 ]; then
+				print_usage_then_exit;
+			elif [ -z "$2" ]; then
+				print_usage_then_exit;
+			else
+				NEXT_HOP_MTU_MAX=$2;
 				shift 2;
 			fi
 		;;
@@ -231,6 +289,16 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		fi
 	fi
 
+	if [ -n "$CHECKSUM" ] && [ -n "$CHECKSUM_MIN" ]; then
+		printf "\nInvalid combination of --checksum and --checksum-min. ">&2;
+		print_usage_then_exit;
+	fi
+
+	if [ -n "$CHECKSUM" ] && [ -n "$CHECKSUM_MAX" ]; then
+		printf "\nInvalid combination of --checksum and --checksum-max. ">&2;
+		print_usage_then_exit;
+	fi
+
 	if [ -n "$CHECKSUM" ]; then
 		if [ -z "$(echo $CHECKSUM | grep '[0-9]\{1,5\}')" ]; then
 			printf "\nInvalid --checksum (must be a 1-5 digit number). ">&2;
@@ -248,13 +316,58 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		fi
 	fi
 
+	CHECKSUM_MIN_IS_VALID=0;
+	if [ -n "$CHECKSUM_MIN" ]; then
+		if [ -z "$(echo $CHECKSUM_MIN | grep '[0-9]\{1,5\}')" ]; then
+			printf "\nInvalid --checksum-min (must be a 1-5 digit number). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $CHECKSUM_MIN -lt 0 ]; then
+			printf "\nInvalid --checksum-min (must be 0 or greater). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $CHECKSUM_MIN -gt 65535 ]; then
+			printf "\nInvalid --checksum-min (must be less than 65536). ">&2;
+			print_usage_then_exit;
+		fi
+
+		CHECKSUM_MIN_IS_VALID=1;
+	fi
+
+	CHECKSUM_MAX_IS_VALID=0;
+	if [ -n "$CHECKSUM_MAX" ]; then
+		if [ -z "$(echo $CHECKSUM_MAX | grep '[0-9]\{1,5\}')" ]; then
+			printf "\nInvalid --checksum-max (must be a 1-5 digit number). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $CHECKSUM_MAX -lt 0 ]; then
+			printf "\nInvalid --checksum-max (must be 0 or greater). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $CHECKSUM_MAX -gt 65535 ]; then
+			printf "\nInvalid --checksum-max (must be less than 65536). ">&2;
+			print_usage_then_exit;
+		fi
+
+		CHECKSUM_MAX_IS_VALID=1;
+	fi
+
+	if [ $CHECKSUM_MIN_IS_VALID -eq 1 ] && [ $CHECKSUM_MIN_IS_VALID -eq 1 ] && [ $CHECKSUM_MIN -ge $CHECKSUM_MAX ]; then
+		printf "\nInvalid --checksum-min and --checksum-max (minimum must be less than maximum). ">&2;
+		print_usage_then_exit;
+	fi
+
 	if [ -n "$LENGTH" ] && [ -n "$LENGTH_MIN" ]; then
-		printf "\nInvalid --length and --length-min (you cannot combine these arguments). ">&2;
+		printf "\nInvalid combination of --length and --length-min. ">&2;
 		print_usage_then_exit;
 	fi
 
 	if [ -n "$LENGTH" ] && [ -n "$LENGTH_MAX" ]; then
-		printf "\nInvalid --length and --length-max (you cannot combine these arguments). ">&2;
+		printf "\nInvalid combination of --length and --length-max. ">&2;
 		print_usage_then_exit;
 	fi
 
@@ -275,6 +388,7 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		fi
 	fi
 
+	LENGTH_MIN_IS_VALID=0;
 	if [ -n "$LENGTH_MIN" ]; then
 		if [ -z "$(echo $LENGTH_MIN | grep '[0-9]\{1,5\}')" ]; then
 			printf "\nInvalid --length-min (must be a 1-5 digit number). ">&2;
@@ -290,8 +404,11 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 			printf "\nInvalid --length-min (must be less than 65536). ">&2;
 			print_usage_then_exit;
 		fi
+
+		LENGTH_MIN_IS_VALID=1;
 	fi
 
+	LENGTH_MAX_IS_VALID=0;
 	if [ -n "$LENGTH_MAX" ]; then
 		if [ -z "$(echo $LENGTH_MAX | grep '[0-9]\{1,5\}')" ]; then
 			printf "\nInvalid --length-max (must be a 1-5 digit number). ">&2;
@@ -307,15 +424,27 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 			printf "\nInvalid --length-max (must be less than 65536). ">&2;
 			print_usage_then_exit;
 		fi
+
+		LENGTH_MAX_IS_VALID=1;
 	fi
 
-	if [ -n "$LENGTH_MIN" ] && [ -n "$LENGTH_MAX" ] && [ $LENGTH_MIN -ge $LENGTH_MAX ]; then
-		printf "\nInvalid --length-min and --length-max (must be in ascending order). ">&2;
+	if [ $LENGTH_MIN_IS_VALID -eq 1 ] && [ $LENGTH_MIN_IS_VALID -eq 1 ] && [ $LENGTH_MIN -ge $LENGTH_MAX ]; then
+		printf "\nInvalid --length-min and --length-max (minimum must be less than maximum). ">&2;
 		print_usage_then_exit;
 	fi
 
 	if [ -n "$CODE" ] && [ "$CODE" != "4" ] && [ -n "$NEXT_HOP_MTU" ]; then
 		printf "\nInvalid --code and --next-hop-mtu (if code is not 4, next-hop-mtu is irrelevant.) ">&2;
+		print_usage_then_exit;
+	fi
+
+	if [ -n "$NEXT_HOP_MTU" ] && [ -n "$NEXT_HOP_MTU_MIN" ]; then
+		printf "\nInvalid combination of --next-hop-mtu and --next-hop-mtu-min. ">&2;
+		print_usage_then_exit;
+	fi
+
+	if [ -n "$NEXT_HOP_MTU" ] && [ -n "$NEXT_HOP_MTU_MAX" ]; then
+		printf "\nInvalid combination of --next-hop-mtu and --next-hop-mtu-max. ">&2;
 		print_usage_then_exit;
 	fi
 
@@ -335,6 +464,51 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 			print_usage_then_exit;
 		fi
 	fi
+
+	NEXT_HOP_MTU_MIN_IS_VALID=0;
+	if [ -n "$NEXT_HOP_MTU_MIN" ]; then
+		if [ -z "$(echo $NEXT_HOP_MTU_MIN | grep '[0-9]\{1,5\}')" ]; then
+			printf "\nInvalid --next-hop-mtu-min (must be a 1-5 digit number). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $NEXT_HOP_MTU_MIN -lt 0 ]; then
+			printf "\nInvalid --next-hop-mtu-min (must be 0 or greater). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $NEXT_HOP_MTU_MIN -gt 65535 ]; then
+			printf "\nInvalid --next-hop-mtu-min (must be less than 65536). ">&2;
+			print_usage_then_exit;
+		fi
+
+		NEXT_HOP_MTU_MIN_IS_VALID=1;
+	fi
+
+	NEXT_HOP_MTU_MAX_IS_VALID=0;
+	if [ -n "$NEXT_HOP_MTU_MAX" ]; then
+		if [ -z "$(echo $NEXT_HOP_MTU_MAX | grep '[0-9]\{1,5\}')" ]; then
+			printf "\nInvalid --next-hop-mtu-max (must be a 1-5 digit number). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $NEXT_HOP_MTU_MAX -lt 0 ]; then
+			printf "\nInvalid --next-hop-mtu-max (must be 0 or greater). ">&2;
+			print_usage_then_exit;
+		fi
+
+		if [ $NEXT_HOP_MTU_MAX -gt 65535 ]; then
+			printf "\nInvalid --next-hop-mtu-max (must be less than 65536). ">&2;
+			print_usage_then_exit;
+		fi
+
+		NEXT_HOP_MTU_MAX_IS_VALID=1;
+	fi
+
+	if [ $NEXT_HOP_MTU_MIN_IS_VALID -eq 1 ] && [ $NEXT_HOP_MTU_MIN_IS_VALID -eq 1 ] && [ $NEXT_HOP_MTU_MIN -ge $NEXT_HOP_MTU_MAX ]; then
+		printf "\nInvalid --next-hop-mtu-min and --next-hop-mtu-max (minimum must be less than maximum). ">&2;
+		print_usage_then_exit;
+	fi
 fi
 
 if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
@@ -349,44 +523,89 @@ BIT_OFFSET_LENGTH=$(($BIT_OFFSET_UNUSED+8));
 BIT_OFFSET_NEXT_HOP_MTU=$(($BIT_OFFSET_LENGTH+8));
 BIT_OFFSET_PAYLOAD=$(($BIT_OFFSET_NEXT_HOP_MTU+16));
 
-printf "\\t\\t#Match Type (Destination Unreachable)\n";
+printf "\\t#Match Type (Destination Unreachable)\n";
 printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_TYPE,8 3 \\\\\n";
 
 if [ -n "$CODE" ]; then
-	printf "\\t\\t#Match Code\n";
+	printf "\\t#Match Code\n";
 	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_CODE,8 $CODE \\\\\n";
 else
-	printf "\\t\\t#Code is unrestricted.\n";
+	printf "\\t#Code is unrestricted.\n";
 fi
 
 if [ -n "$CHECKSUM" ]; then
-	printf "\\t\\t#Match Checksum\n";
+	printf "\\t#Match Checksum (only $CHECKSUM)\n";
 	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_CHECKSUM,16 $CHECKSUM \\\\\n";
-else
-	printf "\\t\\t#Checksum is unrestricted.\n";
 fi
 
-if [ -n "$LENGTH" ] || [ -n "$LENGTH_MIN" ] || [ -n "$LENGTH_MAX" ]; then
-	printf "\\t\\t#Match length\n";
+if [ -n "$CHECKSUM_MIN" ] && [ -z "$CHECKSUM_MAX" ]; then
+	printf "\\t#Match Checksum (minimum $CHECKSUM_MIN)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_CHECKSUM,16 >= $CHECKSUM_MIN \\\\\n";
 fi
+
+if [ -z "$CHECKSUM_MIN" ] && [ -n "$CHECKSUM_MAX" ]; then
+	printf "\\t#Match Checksum (maximum $CHECKSUM_MAX)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_CHECKSUM,16 <= $CHECKSUM_MAX \\\\\n";
+fi
+
+if [ -n "$CHECKSUM_MIN" ] && [ -n "$CHECKSUM_MAX" ]; then
+	printf "\\t#Match Checksum ($CHECKSUM_MIN-$CHECKSUM_MAX)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_CHECKSUM,16 >= $CHECKSUM_MIN \\\\\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_CHECKSUM,16 <= $CHECKSUM_MAX \\\\\n";
+fi
+
+if [ -z "$CHECKSUM" ] && [ -z "$CHECKSUM_MIN" ] && [ -z "$CHECKSUM_MAX" ]; then
+	printf "\\t#Checksum is unrestricted.\n";
+fi
+
 if [ -n "$LENGTH" ]; then
-	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_LENGTH,8 $LENGTH \\\\\n";
+	printf "\\t#Match Length (only $LENGTH)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_LENGTH,16 $LENGTH \\\\\n";
 fi
-if [ -n "$LENGTH_MIN" ]; then
-	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_LENGTH,8 >= $LENGTH_MIN \\\\\n";
+
+if [ -n "$LENGTH_MIN" ] && [ -z "$LENGTH_MAX" ]; then
+	printf "\\t#Match Length (minimum $LENGTH_MIN)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_LENGTH,16 >= $LENGTH_MIN \\\\\n";
 fi
-if [ -n "$LENGTH_MAX" ]; then
-	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_LENGTH,8 <= $LENGTH_MAX \\\\\n";
+
+if [ -z "$LENGTH_MIN" ] && [ -n "$LENGTH_MAX" ]; then
+	printf "\\t#Match Length (maximum $LENGTH_MAX)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_LENGTH,16 <= $LENGTH_MAX \\\\\n";
 fi
+
+if [ -n "$LENGTH_MIN" ] && [ -n "$LENGTH_MAX" ]; then
+	printf "\\t#Match Length ($LENGTH_MIN-$LENGTH_MAX)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_LENGTH,16 >= $LENGTH_MIN \\\\\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_LENGTH,16 <= $LENGTH_MAX \\\\\n";
+fi
+
 if [ -z "$LENGTH" ] && [ -z "$LENGTH_MIN" ] && [ -z "$LENGTH_MAX" ]; then
-	printf "\\t\\t#Length is unrestricted.\n";
+	printf "\\t#Length is unrestricted.\n";
 fi
 
 if [ -n "$NEXT_HOP_MTU" ]; then
-	printf "\\t\\t#Match Next Hop MTU\n";
+	printf "\\t#Match Next Hop MTU (only $NEXT_HOP_MTU)\n";
 	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_NEXT_HOP_MTU,16 $NEXT_HOP_MTU \\\\\n";
-else
-	printf "\\t\\t#Next Hop MTU is unrestricted.\n";
+fi
+
+if [ -n "$NEXT_HOP_MTU_MIN" ] && [ -z "$NEXT_HOP_MTU_MAX" ]; then
+	printf "\\t#Match Next Hop MTU (minimum $NEXT_HOP_MTU_MIN)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_NEXT_HOP_MTU,16 >= $NEXT_HOP_MTU_MIN \\\\\n";
+fi
+
+if [ -z "$NEXT_HOP_MTU_MIN" ] && [ -n "$NEXT_HOP_MTU_MAX" ]; then
+	printf "\\t#Match Next Hop MTU (maximum $NEXT_HOP_MTU_MAX)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_NEXT_HOP_MTU,16 <= $NEXT_HOP_MTU_MAX \\\\\n";
+fi
+
+if [ -n "$NEXT_HOP_MTU_MIN" ] && [ -n "$NEXT_HOP_MTU_MAX" ]; then
+	printf "\\t#Match Next Hop MTU ($NEXT_HOP_MTU_MIN-$NEXT_HOP_MTU_MAX)\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_NEXT_HOP_MTU,16 >= $NEXT_HOP_MTU_MIN \\\\\n";
+	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_NEXT_HOP_MTU,16 <= $NEXT_HOP_MTU_MAX \\\\\n";
+fi
+
+if [ -z "$NEXT_HOP_MTU" ] && [ -z "$NEXT_HOP_MTU_MIN" ] && [ -z "$NEXT_HOP_MTU_MAX" ]; then
+	printf "\\t#Next Hop MTU is unrestricted.\n";
 fi
 
 exit 0;
