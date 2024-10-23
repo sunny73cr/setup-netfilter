@@ -3,7 +3,7 @@
 if [ -z "$ENV_SETUP_NFT" ]; then printf "setup-netfilter: set ENV_SETUP_NFT to the root path of the setup-netfilter directory before continuing.\n">&2; exit 4; fi
 
 print_description() {
-	printf "A program that convert a signed number into an unsigned number (2's complement, negative into positive).\n">&2;
+	printf "A program that converts a signed number into an unsigned number (2's complement, negative into positive).\n">&2;
 }
 
 print_description_then_exit() {
