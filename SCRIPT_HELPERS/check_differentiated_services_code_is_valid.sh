@@ -2,15 +2,8 @@
 
 if [ -z "$ENV_SETUP_NFT" ]; then printf "setup-netfilter: set ENV_SETUP_NFT to the root path of the setup-netfilter directory before continuing.\n">&2; exit 4; fi
 
-#DEPENDENCY_PATH_SCRIPT_NAME="$ENV_SETUP_NFT/path_to_script.sh";
-
-#if [ ! -x $DEPENDENCY_PATH_SCRIPT_NAME ]; then
-#	printf "$0: dependency: \"$DEPENDENCY_PATH_NAME\" is missing or is not executable.\n">&2;
-#	exit 3;
-#fi
-
 print_description() {
-	printf "A program that confirms or denies if the provided DSCP value is valid.\n">&2;
+	printf "A program that returns a 0 exit code if the Differentiated Services Code Point (DSCP) is valid, and 1 if it is not.\n">&2;
 }
 
 print_description_then_exit() {
@@ -23,7 +16,6 @@ if [ "$1" = "-e" ]; then print_description_then_exit; fi
 print_dependencies() {
 	printf "printf\n">&2;
 	printf "echo\n">&2;
-	printf "grep\n">&2;
 	printf "\n">&2;
 }
 
@@ -35,31 +27,17 @@ print_dependencies_then_exit() {
 if [ "$1" = "-d" ]; then print_dependencies_then_exit; fi
 
 print_usage() {
-	printf "Usage: $0 <parameters>\n">&2;
-	printf " -e\n">&2;
-	printf " calling the program with the '-e' flag prints an explanation of the scripts' function or purpose.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -h\n">&2;
-	printf " calling the program with the '-h' flag prints an explanation of the scripts' parameters and their effect.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -d\n">&2;
-	printf " callling the program with the '-d' flags prints a (new-line separated, and terminated) list of the programs' dependencies (what it needs to run).\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " -ehd\n">&2;
-	printf " calling the program with the '-ehd' flag (or, ehd-ucate me) prints the description, the dependencies list, and the usage text.\n">&2;
-	printf " The program then exits with a code of 2 (user input error).\n">&2;
-	printf "\n">&2;
-	printf " Note that calling all scripts in a project with the flag '-ehd', then concatenating their output using file redirection (string > file),\n">&2;
-	printf " Is a nice and easy way to maintain documentation for your project.\n">&2;
+	printf "Flags used by themselves: \n">&2;
+	printf " -e (prints an explanation of the functions' purpose) (exit code 2)\n">&2
+	printf " -h (prints an explanation of the functions' available parameters, and their effect) (exit code 2)\n">&2;
+	printf " -d (prints the functions' dependencies: newline delimited list) (exit code 2)\n">&2;
+	printf " -ehd (prints the above three) (exit code 2)\n">&2;
 	printf "\n">&2;
 	printf "Parameters:\n">&2;
 	printf "\n">&2;
 	printf " Required: --code\n">&2;
-	printf "  Note: this is a decimal code relating to an assigned \"DSCP Code\" as defined by IANA.\n">&2;
-	printf "  Note: refer to: https://iana.org/assignments/dscp-registry/dscp-registry.xhtml\n">&2;
+	printf "  This is a decimal code relating to an assigned \"DSCP Code\" as defined by IANA.\n">&2;
+	printf "  Refer to: https://iana.org/assignments/dscp-registry/dscp-registry.xhtml\n">&2;
 	printf "\n">&2;
 }
 
@@ -87,20 +65,16 @@ while true; do
 
 		--code)
 			if [ $# -lt 2 ]; then
+				printf "\nNot enough arguments (value for $1 is missing.) ">&2;
 				print_usage_then_exit;
 			elif [ -z "$2" ]; then
+				printf "\nNot enough arguments (value for $1 is empty.) ">&2;
 				print_usage_then_exit;
 			else
 				CODE=$2;
 				shift 2;
 			fi
 		;;
-
-		#Approach to parsing flags:
-		#If the flag was provided, toggle on its value; then move next
-		#Or shift 1 / remove the flag from the list
-
-		#
 
 		#Handle the case of 'end' of arg parsing; where all flags are shifted from the list,
 		#or the program was called without any parameters. exit the arg parsing loop.
