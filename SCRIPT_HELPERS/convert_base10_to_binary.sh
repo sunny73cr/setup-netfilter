@@ -32,6 +32,7 @@ print_dependencies() {
 	printf "echo\n">&2;
 	printf "$DEPENDENCY_SCRIPT_PATH_SUBSTRING\n">&2;
 	printf "$DEPENDENCY_SCRIPT_PATH_EXPONENT\n">&2;
+	printf "grep\n">&2;
 	printf "\n">&2;
 }
 
