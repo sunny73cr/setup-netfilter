@@ -1,65 +1,150 @@
 #!/bin/sh
 
-print_usage_then_exit () {
-	printf "Usage: $0 <arguments>\n";
-	printf " --binary <string> (0's and 1's).\n";
-	printf "\n">&2;
-	printf " Optional: --input-bit-order (big-endian or little-endian).\n">&2;
-	printf " Note: if input-bit-order is omitted, the default is little-endian.\n">&2;
-	printf "\n">&2;
-	printf " Optional: --output-signed-numbers\n">&2;
-	printf " Note: if the output-signed-numbers flag is present, numbers with the highest bit set are output as negative numbers.\n">&2;
-	printf " WARNING: this is very likely not what you want, unless the binary is already a length matching a data type, with zero padding if neccessary.\n">&2;
-	printf "\n">&2;
-	printf " Optional: --newline-suffix-output\n">&2;
-	printf " Note: this causes the program to append a newline to the output.\n">&2;
-	printf "\n">&2;
+if [ -z "$ENV_SETUP_NFT" ]; then printf "setup-netfilter: set ENV_SETUP_NFT to the root path of the setup-netfilter directory before continuing.\n">&2; exit 4; fi
+
+print_description() {
+	printf "A program that converts a binary string into a base 10 (decimal) number.\n">&2;
+}
+
+print_description_then_exit() {
+	print_description;
 	exit 2;
 }
 
+if [ "$1" = "-e" ]; then print_description_then_exit; fi
+
+print_dependencies() {
+	printf "printf\n">&2;
+	printf "echo\n">&2;
+	printf "cut\n">&2;
+	printf "grep\n">&2;
+	printf "\n">&2;
+}
+
+print_dependencies_then_exit() {
+	print_dependencies;
+	exit 2;
+}
+
+if [ "$1" = "-d" ]; then print_dependencies_then_exit; fi
+
+print_usage() {
+	printf "Flags used by themselves: \n">&2;
+	printf " -e (prints an explanation of the functions' purpose) (exit code 2)\n">&2
+	printf " -h (prints an explanation of the functions' available parameters, and their effect) (exit code 2)\n">&2;
+	printf " -d (prints the functions' dependencies: newline delimited list) (exit code 2)\n">&2;
+	printf " -ehd (prints the above three) (exit code 2)\n">&2;
+	printf "\n">&2;
+	printf "Parameters:\n">&2;
+	printf "\n">&2;
+	printf " Required: --binary <string> (0's and 1's).\n";
+	printf "\n">&2;
+	printf " Optional: --input-bit-order (big-endian or little-endian).\n">&2;
+	printf "  if input-bit-order is omitted, the default is little-endian.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --output-signed-numbers\n">&2;
+	printf "  if the output-signed-numbers flag is present, numbers with the highest bit set are output as negative numbers.\n">&2;
+	printf "  WARNING: this is very likely not what you want, unless the binary is already a length matching a data type, with zero padding if neccessary.\n">&2;
+	printf "\n">&2;
+	printf " Optional: --skip-validation\n">&2;
+	printf "  Presence of this flag causes the program to skip validating inputs (if you know they are valid).\n">&2;
+	printf "\n">&2;
+	printf " Optional: --only-validate\n">&2;
+	printf "  Presence of this flag causes the program to exit after validating inputs.\n">&2;
+	printf "\n">&2;
+}
+
+print_usage_then_exit() {
+	print_usage;
+	exit 2;
+}
+
+if [ "$1" = "-h" ]; then print_usage_then_exit; fi
+
+if [ "$1" = "-ehd" ]; then print_description; printf "\n">&2; print_dependencies; printf "\n">&2; print_usage; exit 2; fi
+
+#ARGUMENTS:
 BINARY="";
-BIT_ORDER="";
-OUTPUT_SIGNED_NUMBERS=0;
-SKIP_VALIDATE=0;
-NEWLINE_SUFFIX_OUTPUT=0;
+INPUT_BIT_ORDER="little-endian";
+OUTPUT_SIGNED_NUMBERS="";
+
+#FLAGS:
+SKIP_VALIDATION=0;
+ONLY_VALIDATE=0;
+
 while true; do
 	case $1 in
+		#Approach to parsing arguments:
+		#If the length of 'all arguments' is less than 2 (shift reduces this number),
+		#since this is an argument parameter and requires a value; the program cannot continue.
+		#Else, if the argument was provided, and its 'value' is empty; the program cannot continue.
+		#Else, assign the argument, and shift 2 (both the argument indicator and its value / move next)
+
 		--binary)
 			if [ $# -lt 2 ]; then
+				printf "\nNot enough arguments (value for $1 is missing.) ">&2;
 				print_usage_then_exit;
-			elif [ "$2" = "" ]; then
+			elif [ -z "$2" ]; then
+				printf "\nNot enough arguments (value for $1 is empty.) ">&2;
 				print_usage_then_exit;
 			else
 				BINARY=$2;
 				shift 2;
 			fi
 		;;
+
 		--input-bit-order)
 			if [ $# -lt 2 ]; then
+				printf "\nNot enough arguments (value for $1 is missing.) ">&2;
 				print_usage_then_exit;
-			elif [ "$2" = "" ]; then
+			elif [ -z "$2" ]; then
+				printf "\nNot enough arguments (value for $1 is empty.) ">&2;
 				print_usage_then_exit;
 			else
-				BIT_ORDER=$2;
+				INPUT_BIT_ORDER=$2;
 				shift 2;
 			fi
 		;;
+
 		--output-signed-numbers)
-			OUTPUT_SIGNED_NUMBERS=1;
+			if [ $# -lt 2 ]; then
+				printf "\nNot enough arguments (value for $1 is missing.) ">&2;
+				print_usage_then_exit;
+			elif [ -z "$2" ]; then
+				printf "\nNot enough arguments (value for $1 is empty.) ">&2;
+				print_usage_then_exit;
+			else
+				OUTPUT_SIGNED_NUMBERS=$2;
+				shift 2;
+			fi
+		;;
+
+		#Approach to parsing flags:
+		#If the flag was provided, toggle on its value; then move next
+		#Or shift 1 / remove the flag from the list
+
+		--skip-validation)
+			SKIP_VALIDATION=1;
 			shift 1;
 		;;
-		--skip-validate)
-			SKIP_VALIDATE=1;
+
+		--only-validate)
+			ONLY_VALIDATE=1;
 			shift 1;
 		;;
-		--newline-suffix-output)
-			NEWLINE_SUFFIX_OUTPUT=1;
-			shift 1;
-		;;
+
+		#Handle the case of 'end' of arg parsing; where all flags are shifted from the list,
+		#or the program was called without any parameters. exit the arg parsing loop.
 		"") break; ;;
-		*) printf "Unrecognised argument $1. ">&2; print_usage_then_exit; ;;
+
+		#Handle the case where an argument or flag was called that the program does not recognise.
+		#This should prefix the 'usage' text with the reason the program failed.
+		#The 'Standard Error' file descriptor is used to separate failure output or log messages from actual program output.
+		*) printf "\nUnrecognised argument $1. ">&2; print_usage_then_exit; ;;
+
 	esac
-done
+done;
+
 
 if [ -z "$BINARY" ]; then
 	BINARY=$(dd if=/dev/stdin of=/dev/stdout bs=1 count=32 status=none);
@@ -69,16 +154,14 @@ fi
 
 if [ $SKIP_VALIDATE -eq 0 ]; then
 
-	if [ "$(echo "$BINARY" | grep -E '^[0|1]{1,32}$')" = "" ]; then
-		printf "\nInvalid --binary. ">&2;
+	if [ -z "$(echo $BINARY | grep '^[0|1]\{1,32\}$')" ]; then
+		printf "\nInvalid --binary (not a string of 1's and 0's that is 1-32 characters in length). ">&2;
 		print_usage_then_exit;
 	fi
 
-	if [ "$(echo "$BINARY" | grep -E '^[0]{1,32}$')" != "" ]; then
+	#if zero, exit early
+	if [ -n "$(echo $BINARY | grep '^[0]\{1,32\}$')" ]; then
 		printf "0";
-		if [ $NEWLINE_SUFFIX_OUTPUT -eq 1 ]; then
-			printf "\n";
-		fi
 		exit 0;
 	fi
 fi
@@ -90,7 +173,7 @@ case "$BIT_ORDER" in
 		OFFSET=1;
 		BIT_ORDER=0;
 	;;
-	""|little-endian)
+	little-endian)
 		OFFSET=$BIT_LENGTH;
 		BIT_ORDER=1;
 	;;
@@ -139,38 +222,38 @@ while true; do
 
 	if [ $BIT -eq 1 ]; then
 		case $OFFSET in
-			1) TOTAL=$((TOTAL+1)); ;;
-			2) TOTAL=$((TOTAL+2)); ;;
-			3) TOTAL=$((TOTAL+4)); ;;
-			4) TOTAL=$((TOTAL+8)); ;;
-			5) TOTAL=$((TOTAL+16)); ;;
-			6) TOTAL=$((TOTAL+32)); ;;
-			7) TOTAL=$((TOTAL+64)); ;;
-			8) TOTAL=$((TOTAL+128)); ;;
-			9) TOTAL=$((TOTAL+256)); ;;
-			10) TOTAL=$((TOTAL+512)); ;;
-			11) TOTAL=$((TOTAL+1024)); ;;
-			12) TOTAL=$((TOTAL+2048)); ;;
-			13) TOTAL=$((TOTAL+4096)); ;;
-			14) TOTAL=$((TOTAL+8192)); ;;
-			15) TOTAL=$((TOTAL+16384)); ;;
-			16) TOTAL=$((TOTAL+32768)); ;;
-			17) TOTAL=$((TOTAL+65536)); ;;
-			18) TOTAL=$((TOTAL+131072)); ;;
-			19) TOTAL=$((TOTAL+262144)); ;;
-			20) TOTAL=$((TOTAL+524288)); ;;
-			21) TOTAL=$((TOTAL+1048576)); ;;
-			22) TOTAL=$((TOTAL+2097152)); ;;
-			23) TOTAL=$((TOTAL+4194304)); ;;
-			24) TOTAL=$((TOTAL+8388608)); ;;
-			25) TOTAL=$((TOTAL+16777216)); ;;
-			26) TOTAL=$((TOTAL+33554432)); ;;
-			27) TOTAL=$((TOTAL+67108864)); ;;
-			28) TOTAL=$((TOTAL+134217728)); ;;
-			29) TOTAL=$((TOTAL+268435456)); ;;
-			30) TOTAL=$((TOTAL+536870912)); ;;
-			31) TOTAL=$((TOTAL+1073741824)); ;;
-			32) TOTAL=$((TOTAL+2147483648)); ;;
+			1) TOTAL=$(($TOTAL+1)); ;;
+			2) TOTAL=$(($TOTAL+2)); ;;
+			3) TOTAL=$(($TOTAL+4)); ;;
+			4) TOTAL=$(($TOTAL+8)); ;;
+			5) TOTAL=$(($TOTAL+16)); ;;
+			6) TOTAL=$(($TOTAL+32)); ;;
+			7) TOTAL=$(($TOTAL+64)); ;;
+			8) TOTAL=$(($TOTAL+128)); ;;
+			9) TOTAL=$(($TOTAL+256)); ;;
+			10) TOTAL=$(($TOTAL+512)); ;;
+			11) TOTAL=$(($TOTAL+1024)); ;;
+			12) TOTAL=$(($TOTAL+2048)); ;;
+			13) TOTAL=$(($TOTAL+4096)); ;;
+			14) TOTAL=$(($TOTAL+8192)); ;;
+			15) TOTAL=$(($TOTAL+16384)); ;;
+			16) TOTAL=$(($TOTAL+32768)); ;;
+			17) TOTAL=$(($TOTAL+65536)); ;;
+			18) TOTAL=$(($TOTAL+131072)); ;;
+			19) TOTAL=$(($TOTAL+262144)); ;;
+			20) TOTAL=$(($TOTAL+524288)); ;;
+			21) TOTAL=$(($TOTAL+1048576)); ;;
+			22) TOTAL=$(($TOTAL+2097152)); ;;
+			23) TOTAL=$(($TOTAL+4194304)); ;;
+			24) TOTAL=$(($TOTAL+8388608)); ;;
+			25) TOTAL=$(($TOTAL+16777216)); ;;
+			26) TOTAL=$(($TOTAL+33554432)); ;;
+			27) TOTAL=$(($TOTAL+67108864)); ;;
+			28) TOTAL=$(($TOTAL+134217728)); ;;
+			29) TOTAL=$(($TOTAL+268435456)); ;;
+			30) TOTAL=$(($TOTAL+536870912)); ;;
+			31) TOTAL=$(($TOTAL+1073741824)); ;;
+			32) TOTAL=$(($TOTAL+2147483648)); ;;
 		esac
 	fi
 
@@ -181,16 +264,12 @@ while true; do
 	CHAR_IDX=$(($CHAR_IDX+1));
 
 	if [ $BIT_ORDER -eq 0 ]; then
-		OFFSET=$((OFFSET+1));
+		OFFSET=$(($OFFSET+1));
 	else
-		OFFSET=$((OFFSET-1));
+		OFFSET=$(($OFFSET-1));
 	fi
 done;
 
-printf $TOTAL;
-
-if [ $NEWLINE_SUFFIX_OUTPUT -eq 1 ]; then
-	printf "\n";
-fi
+printf "$TOTAL";
 
 exit 0;
