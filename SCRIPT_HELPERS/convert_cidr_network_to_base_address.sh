@@ -135,15 +135,15 @@ while true; do
 done;
 
 if [ $SKIP_VALIDATION -eq 0 ]; then
-	if [ -z "$ADDRESS" ]; then
-		echo "\nMissing --address. ">&2;
+	if [ -z "$NETWORK" ]; then
+		echo "\nMissing --network. ">&2;
 		print_usage_then_exit;
 	fi
 
 	$DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID --network "$ADDRESS"
 	case $? in
 		0) ;;
-		1) printf "\nInvalid --address. ">&2; print_usage_then_exit; ;;
+		1) printf "\nInvalid --network. ">&2; print_usage_then_exit; ;;
 		*) printf "$0: dependency \"$DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID\" produced a failure exit code ($?).">&2; exit 3; ;;
 	esac
 fi
