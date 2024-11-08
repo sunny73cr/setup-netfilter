@@ -66,7 +66,7 @@ if [ "$1" = "-ehd" ]; then print_description; printf "\n">&2; print_dependencies
 #ARGUMENTS:
 BINARY="";
 INPUT_BIT_ORDER="little-endian";
-OUTPUT_SIGNED_NUMBERS="";
+OUTPUT_SIGNED_NUMBERS=0;
 
 #FLAGS:
 SKIP_VALIDATION=0;
@@ -152,7 +152,7 @@ if [ -z "$BINARY" ]; then
 	if [ -z "BINARY" ]; then print_usage_then_exit; fi
 fi
 
-if [ $SKIP_VALIDATE -eq 0 ]; then
+if [ $SKIP_VALIDATION -eq 0 ]; then
 
 	if [ -z "$(echo $BINARY | grep '^[0|1]\{1,32\}$')" ]; then
 		printf "\nInvalid --binary (not a string of 1's and 0's that is 1-32 characters in length). ">&2;
@@ -168,14 +168,14 @@ fi
 
 BIT_LENGTH="${#BINARY}";
 
-case "$BIT_ORDER" in
+case "$INPUT_BIT_ORDER" in
 	big-endian)
 		OFFSET=1;
-		BIT_ORDER=0;
+		INPUT_BIT_ORDER=0;
 	;;
 	little-endian)
 		OFFSET=$BIT_LENGTH;
-		BIT_ORDER=1;
+		INPUT_BIT_ORDER=1;
 	;;
 	*)
 		printf "\nInvalid --bit-order. ">&2;
@@ -196,7 +196,7 @@ esac
 
 #if signing output numbers, output a - if the number is negative
 if [ $OUTPUT_SIGNED_NUMBERS -eq 1 ]; then
-	if [ $BIT_ORDER -eq 1 ]; then
+	if [ $INPUT_BIT_ORDER -eq 1 ]; then
 		OFFSET=$(($OFFSET+1));
 		if [ "$(echo $BINARY | cut -c 1)" = "1" ]; then
 			#negative little endian number
@@ -263,7 +263,7 @@ while true; do
 
 	CHAR_IDX=$(($CHAR_IDX+1));
 
-	if [ $BIT_ORDER -eq 0 ]; then
+	if [ $INPUT_BIT_ORDER -eq 0 ]; then
 		OFFSET=$(($OFFSET+1));
 	else
 		OFFSET=$(($OFFSET-1));
