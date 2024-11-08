@@ -169,7 +169,7 @@ if [ -z "$NUMBER" ]; then
 	if [ -z "$NUMBER" ]; then print_usage_then_exit; fi
 fi
 
-if [ $SKIP_VALIDATE -eq 0 ]; then
+if [ $SKIP_VALIDATION -eq 0 ]; then
 	if [ -z "$NUMBER" ]; then
 		printf "\nMissing --number. ">&2;
 		print_usage_then_exit;
@@ -185,23 +185,23 @@ if [ $SKIP_VALIDATE -eq 0 ]; then
 		print_usage_then_exit;
 	fi
 
-	if [ -n "$BIT_LENGTH" ]; then
-		if [ "$(echo $BIT_LENGTH | grep '^[1-9][0-9]\{0,1\}$')" = "" ]; then
-			printf "\nInvalid --bit-length. ">&2;
+	if [ -n "$OUTPUT_BIT_LENGTH" ]; then
+		if [ "$(echo $OUTPUT_BIT_LENGTH | grep '^[1-9][0-9]\{0,1\}$')" = "" ]; then
+			printf "\nInvalid --output-bit-length. ">&2;
 			print_usage_then_exit;
 		fi
 
-		if [ "$BIT_LENGTH" -eq 0 ]; then
-			printf "\nInvalid --bit-length. ">&2;
+		if [ "$OUTPUT_BIT_LENGTH" -eq 0 ]; then
+			printf "\nInvalid --output-bit-length. ">&2;
 			print_usage_then_exit;
 		fi
 
-		if [ "$BIT_LENGTH" -gt 32 ]; then
-			printf "\nInvalid --bit-length. ">&2;
+		if [ "$OUTPUT_BIT_LENGTH" -gt 32 ]; then
+			printf "\nInvalid --output-bit-length. ">&2;
 			print_usage_then_exit;
 		fi
 
-		BIT_LENGTH_CAPACITY=$($DEPENDENCY_SCRIPT_PATH_EXPONENT --base 2 --exponent $BIT_LENGTH);
+		BIT_LENGTH_CAPACITY=$($DEPENDENCY_SCRIPT_PATH_EXPONENT --base 2 --exponent $OUTPUT_BIT_LENGTH);
 		case $? in
 			0) ;;
 			*) printf "$0: dependency: \"$DEPENDENCY_SCRIPT_PATH_EXPONENT\" produced a failure exit code ($?).\n">&2; exit 3; ;;
@@ -214,26 +214,26 @@ if [ $SKIP_VALIDATE -eq 0 ]; then
 		fi
 	fi
 
-	if [ -n "$BIT_ORDER" ]; then
-		case "$BIT_ORDER" in
+	if [ -n "$OUTPUT_BIT_ORDER" ]; then
+		case "$OUTPUT_BIT_ORDER" in
 			"big-endian") ;;
 			"little-endian") ;;
 			*) printf "\nInvalid --bit-order. ">&2; print_usage_then_exit; ;;
 		esac
 	else
-		BIT_ORDER=1;
+		OUTPUT_BIT_ORDER=1;
 	fi
 
 fi
 
-if [ -n "$BIT_ORDER" ]; then
-	case "$BIT_ORDER" in
-		"big-endian") BIT_ORDER=0; ;;
-		"little-endian") BIT_ORDER=1; ;;
-		*) BIT_ORDER=1; ;;
+if [ -n "$OUTPUT_BIT_ORDER" ]; then
+	case "$OUTPUT_BIT_ORDER" in
+		"big-endian") OUTPUT_BIT_ORDER=0; ;;
+		"little-endian") OUTPUT_BIT_ORDER=1; ;;
+		*) OUTPUT_BIT_ORDER=1; ;;
 	esac
 else
-	BIT_ORDER=1;
+	OUTPUT_BIT_ORDER=1;
 fi
 
 if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
@@ -252,7 +252,7 @@ QUOTIENT="$NUMBER";
 while true; do
 	if [ $QUOTIENT -eq 0 ]; then break; fi
 
-	if [ $BIT_ORDER -eq 0 ]; then
+	if [ $OUTPUT_BIT_ORDER -eq 0 ]; then
 		#big-endian
 		RESULT=$RESULT$(($QUOTIENT % 2));
 	else
@@ -263,10 +263,10 @@ while true; do
 	QUOTIENT=$(($QUOTIENT / 2));
 done;
 
-if [ -n "$BIT_LENGTH" ]; then
+if [ -n "$OUTPUT_BIT_LENGTH" ]; then
 	#Zero pad binary output to desired bit length.
 
-	ZERO_PAD_COUNT=$(( $BIT_LENGTH - ${#RESULT} ));
+	ZERO_PAD_COUNT=$(( $OUTPUT_BIT_LENGTH - ${#RESULT} ));
 
 	ZERO_PAD="";
 
@@ -280,7 +280,7 @@ if [ -n "$BIT_LENGTH" ]; then
 
 	#Zero pad for desired bit order.
 
-	if [ $BIT_ORDER -eq 0 ]; then
+	if [ $OUTPUT_BIT_ORDER -eq 0 ]; then
 		#big endian
 		printf "$RESULT$ZERO_PAD";
 	else

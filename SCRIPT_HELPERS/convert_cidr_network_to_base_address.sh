@@ -140,29 +140,19 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		print_usage_then_exit;
 	fi
 
-	$DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID --network "$ADDRESS"
+	$DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID --network "$NETWORK"
 	case $? in
 		0) ;;
 		1) printf "\nInvalid --network. ">&2; print_usage_then_exit; ;;
-		*) printf "$0: dependency \"$DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID\" produced a failure exit code ($?).">&2; exit 3; ;;
+		*) printf "$0: dependency \"$DEPENDENCY_PATH_CHECK_IPV4_NETWORK_IS_VALID\" produced a failure exit code ($?).\n">&2; exit 3; ;;
 	esac
 fi
 
 if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
-MASK=$(echo "$ADDRESS" | cut -d '/' -f 2);
+ADDRESS=$(echo "$NETWORK" | cut -d '/' -f 1);
 
-if [ "$MASK" -eq 0 ]; then
-	echo "\nInvalid CIDR network mask. ">&2;
-	print_usage_then_exit;
-fi
-
-ADDRESS=$(echo "$ADDRESS" | cut -d '/' -f 1);
-
-if [ "$MASK" -eq 32 ]; then
-	echo "\nInvalid CIDR network mask. ">&2;
-	print_usage_then_exit;
-fi
+MASK=$(echo "$NETWORK" | cut -d '/' -f 2);
 
 ##s
 # Convert the address to binary.
@@ -196,7 +186,7 @@ ZERO_FILL=$(echo "$THIRTY_TWO_ZEROES" | cut -c "1-$((32-$MASK))");
 ADDRESS_BASE_BINARY="$ADDRESS_BINARY_MASKED$ZERO_FILL";
 
 ADDRESS_BASE_DECIMAL_OCTET1=$($DEPENDENCY_PATH_CONVERT_BINARY_TO_DECIMAL \
---binary "$(echo "$ADDRESS_BASE_BINARY" | cut -c '1-8')" \
+--binary "$(echo $ADDRESS_BASE_BINARY | cut -c '1-8')" \
 --input-bit-order "little-endian");
 case $? in
 	0) ;;
@@ -204,7 +194,7 @@ case $? in
 esac
 
 ADDRESS_BASE_DECIMAL_OCTET2=$($DEPENDENCY_PATH_CONVERT_BINARY_TO_DECIMAL \
---binary "$(echo "$ADDRESS_BASE_BINARY" | cut -c '9-16')" \
+--binary "$(echo $ADDRESS_BASE_BINARY | cut -c '9-16')" \
 --input-bit-order "little-endian");
 case $? in
 	0) ;;
@@ -212,7 +202,7 @@ case $? in
 esac
 
 ADDRESS_BASE_DECIMAL_OCTET3=$($DEPENDENCY_PATH_CONVERT_BINARY_TO_DECIMAL \
---binary "$(echo "$ADDRESS_BASE_BINARY" | cut -c '17-24')" \
+--binary "$(echo $ADDRESS_BASE_BINARY | cut -c '17-24')" \
 --input-bit-order "little-endian");
 case $? in
 	0) ;;
@@ -220,7 +210,7 @@ case $? in
 esac
 
 ADDRESS_BASE_DECIMAL_OCTET4=$($DEPENDENCY_PATH_CONVERT_BINARY_TO_DECIMAL \
---binary "$(echo "$ADDRESS_BASE_BINARY" | cut -c '25-32')" \
+--binary "$(echo $ADDRESS_BASE_BINARY | cut -c '25-32')" \
 --input-bit-order "little-endian");
 case $? in
 	0) ;;

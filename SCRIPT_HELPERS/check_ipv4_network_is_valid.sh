@@ -125,25 +125,20 @@ if [ $SKIP_VALIDATION -eq 0 ]; then
 		printf "\nMissing --network. ">&2;
 		print_usage_then_exit;
 	fi
-
-	if [ -z "$(echo $NETWORK | grep '^[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}/[0-9]{1,2}$')" ]; then
-		printf "\nInvalid --network. ">&2;
-		print_usage_then_exit;
-	fi
 fi
 
 if [ $ONLY_VALIDATE -eq 1 ]; then exit 0; fi
 
-NETWORK_ADDRESS=$(echo "$ADDRESS" | cut -d '/' -f 1);
+NETWORK_ADDRESS=$(echo "$NETWORK" | cut -d '/' -f 1);
 
 $DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS --address "$NETWORK_ADDRESS"
 case $? in
 	0) ;;
 	1) printf "\nInvalid address portion of --network. ">&2 exit 1; ;;
-	*) printf "\n$0: dependency \"$DEPEDENCY_PATH_VALIDATE_IPV4_ADDRESS\" produced a failure exit code ($?).">&2 exit 3; ;;
+	*) printf "\n$0: dependency \"$DEPENDENCY_PATH_VALIDATE_IPV4_ADDRESS\" produced a failure exit code ($?).">&2 exit 3; ;;
 esac
 
-CIDR_MASK=$(echo "$ADDRESS" | cut -d '/' -f 2);
+CIDR_MASK=$(echo "$NETWORK" | cut -d '/' -f 2);
 
 if [ -z "$(echo "$CIDR_MASK" | grep '[0-9]\{1,2\}')" ]; then
 	printf "\n$0: the CIDR/Network mask must be a 1-2 digit number. ">&2;
