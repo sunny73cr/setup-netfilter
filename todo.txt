@@ -1,5 +1,82 @@
-
-refactor arg parsing for each script to inform user of why parsing failed if empty, or not enough arguments
-
 Help users to avoid legal trouble by checking if they are impersonating another mac address / permitted to use 'locally-administered addresses' in WAN/MAN space.
+
+ try_match_tcp_header
+  offset_header_begin shift max down by 1
+  flags set require one then optional 0-7
+  flags off require one then optional 0-7
+
+ try_match_udp_header
+  add validate_port to dependencies
+  source destination port edit bounds
+
+ try_match_ntp_kiss_of_death
+  remove ramble regarding root dispersion; that is for stratum 2 + only
+  remove convert_ascii_to_decimal
+  reference id needs to be control channel codes... why is it not?
+  kiss of death does not have a reference timestamp? i think
+
+ try_match_ntp_stratum_1
+  remove ramble regarding root dispersion; that is for stratum 2 + only
+  remove convert_ascii_to_decimal
+  reference_timestamp_leniency should be milliseconds? maybe microseconds
+  stratum should be one...
+  root dispersion fraction... check again
+
+ try_match_ntp_stratum_2
+  remove convert_ascii_to_decimal
+  root dispersion fraction... check again
+
+ try_match_interface
+  remove template 'dependency'
+
+ try_match_ipv4_header
+  'you mus not' => 'you must not'
+  * (help text) 'you must not combine "fragments enabled no and fragments enabled yes"'
+  delete line 1139
+ 
+ add more ICMP types to ICMP rule helpers
+
+ try_match_dns_query
+  line 81 clarify
+  line 387 reference an RFC
+
+ try_match_dns_response
+  line 65 uodate => update
+  line 120 clarify
+  line 133 'or' should be 'and'
+  line 145 'or' should be 'and'
+  line 169 'or' should be 'and'
+  line 985-987 delete
+
+ try_match_dhcp_ack
+  line 519 - 15 bits off
+
+ try_match_dhcp_decline
+  line 10 add a newline
+
+ dhcp packets - it is stronly recommended to supply both => strongly
+  
+ add try_match_dhcp_inform
+
+ add different hardware types to DHCP packets (wifi eg.)
+ 
+ try_match_arp_gratuitous_tha_duplicated
+  line 278,295,312,329 fix regex
+
+ try_match_arp_gratuitous_tha_duplicated
+  fix regex
+
+ try_match_arp_probe
+  fix regex
+
+ try_match_arp_reply
+  fix regex
+
+ for all:
+  produced a failure exit code... ($?) display the code
+  check that 'Usage: $0 <parameters>\n' precedes usage text
+  remove 'why, user?' checks
+  #!/bin/sh => #!/bin/dash
+  refactor arg parsing for each script to inform user of why parsing failed if empty, or not enough arguments
+  remove use of skuid, should be in another place
 
