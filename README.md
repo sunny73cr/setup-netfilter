@@ -1,5 +1,5 @@
 # setup-netfilter
-A collection of shell scripts that build a config file for use with NetFilter.
+A collection of dash shell scripts that build a config file for use with NetFilter.
 This should assist (or completely automate) the setup of NetFIlter in Linux-based clients and servers.
 
 TODO:
