@@ -1,0 +1,5 @@
+
+refactor arg parsing for each script to inform user of why parsing failed if empty, or not enough arguments
+
+Help users to avoid legal trouble by checking if they are impersonating another mac address / permitted to use 'locally-administered addresses' in WAN/MAN space.
+
