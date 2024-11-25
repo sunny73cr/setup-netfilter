@@ -1,22 +1,64 @@
 Help users to avoid legal trouble by checking if they are impersonating another mac address / permitted to use 'locally-administered addresses' in WAN/MAN space.
 
- try_match_tcp_header
-  offset_header_begin shift max down by 1
-  flags set require one then optional 0-7
-  flags off require one then optional 0-7
+ for 'rule match' scripts - remove 'check service user id' - should be handled elsewhere, consumed by user interface
 
  try_match_udp_header
   add validate_port to dependencies
-  source destination port edit bounds
+  source destination port edit bounds (include 0)
+  line 306 - less than 65536
+  line 342 - less than 65536
+  line 353; then
+  line 400 - less than 65536
+  line 411; then
+  line 471 = 1
+  line 491 = 1
+  line 543 = 1
+  line 563 = 1
+  if validation skipped, extract port range begin and end
+  line 657 - 'checksum is unrestricted'
+
+ try_match_tcp_header
+  line 'titles' should be 'single-tabbed' (\\t\\t# -> \\t#)
+  offset_header_begin shift max down by 1
+  flags set require one then optional 0-7
+  flags off require one then optional 0-7
+  line 85 - remove this requirement
+  line 100 - remove this requirement
+  line 113 - remove this requirement
+  line 135 - remove this requirement
+  line 164 - remove this requirement
+  line 557 - gt 65535
+  line 558 - 65536
+  line 700 - 0 or greater
+  line 718 - 0 or greater
+  line 738 - 0 or greater
+  line 751 - remove this requirement (re-order)
+  line 772 - 0 or greater
+  line 790 - 0 or greater
+  line 810 - 0 or greater
+  line 823 - remove this requirement (re-order)
+  line 843 - 5 or greater
+  line 844 - 5 or greater
+  line 861 - 5 or greater
+  line 862 - 5 or greater
+  line 881 - 5 or greater
+  line 882 - 5 or greater
+  line 895 - remove this requirement (re-order)
+  line 1089 - remove this requirement (re-order)
+  line 1110 - 0 or greater
+  line 1128 - 0 or greater
+  line 1161 - remove this requirement (re-order)
+  line 1200 - 0 or greater
+  line 1220 - 0 or greater
+  line 1233 - remove this requirement (re-order)
 
  try_match_ntp_kiss_of_death
   remove ramble regarding root dispersion; that is for stratum 2 + only
   remove convert_ascii_to_decimal
   reference id needs to be control channel codes... why is it not?
-  kiss of death does not have a reference timestamp? i think
+  kiss of death does not have a reference timestamp? i think, etc.. you copied stratum 1 and regret it.
 
  try_match_ntp_stratum_1
-  remove ramble regarding root dispersion; that is for stratum 2 + only
   remove convert_ascii_to_decimal
   reference_timestamp_leniency should be milliseconds? maybe microseconds
   stratum should be one...
@@ -39,6 +81,7 @@ Help users to avoid legal trouble by checking if they are impersonating another 
  try_match_dns_query
   line 81 clarify
   line 387 reference an RFC
+  is checking disabled yes|no. remove is-dnssec-disabled, absence of cd is the same as is dnssec disabled
 
  try_match_dns_response
   line 65 uodate => update
@@ -47,12 +90,17 @@ Help users to avoid legal trouble by checking if they are impersonating another 
   line 145 'or' should be 'and'
   line 169 'or' should be 'and'
   line 985-987 delete
+  is checking disabled yes|no. remove is-dnssec-disabled. If Authentic Data preferred, checking disabled must be no or absent.
 
  try_match_dhcp_ack
   line 519 - 15 bits off
 
  try_match_dhcp_decline
   line 10 add a newline
+  add support for a declined address or network
+
+ try_match_dhcp_nak
+  add support for a forbidden address or network
 
  dhcp packets - it is stronly recommended to supply both => strongly
   
@@ -80,3 +128,19 @@ Help users to avoid legal trouble by checking if they are impersonating another 
   refactor arg parsing for each script to inform user of why parsing failed if empty, or not enough arguments
   remove use of skuid, should be in another place
 
+ operate two dns servers, one for 1.1.1.1 / similar, one for 1.1.1.2 / similar
+ dnat for specific MAC IP pairs / client certs
+
+ period based packet signature block for MAC/IP or Cert
+
+ period based network block for MAC/IP or Cert
+
+ setup help for 802.1x / RADIUS for iPhone (iOS 11+)
+
+ setup help for 802.1x / RADIUS for Android (Android 10+?)
+  Root and Intermediate CA needs bundling into single base64 encoded file? for Android 10+?
+   www.reddit.com/r/networking/comments/qldd9d/comment/h4b6w4
+
+ validate 802.1x for Android
+
+ validate 802.1x for iOS
