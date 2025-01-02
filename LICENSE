@@ -1,18 +1,35 @@
-Copyright (c) 2024
+Copyright 2024-2025
 Author: Dylan Avery
 Contact Email: sunny73cr@protonmail.com
 
-Permission is hereby granted, free of charge, to any person obtaining a copy or significant portion of
-this software (the "Software"), and the associated documentation files (the "Documentation");
-to use, understand, copy, modify, publish, distribute, sublicense, and sell copies of the Software without restriction,
-and to permit persons to whom it is provided, to do the same, subject to the following conditions:
+Definitions:
+the "Software" is "setup-netfilter", currently accessible at the URI: https://github.com/sunny73cr/setup-netfilter
+the "Documentation" is "setup_netfilter_documentation.odt", it is made available alongside the Software.
+the "Author" of 'setup-netfilter' is Dylan Avery.
 
-This license shall be included in all copies or substantial portions of the Software.
+Permissions granted:
+- Subject to the conditions stated in this licence; permission is hereby granted, free of charge,
+  to any person obtaining a copy of the "Software", and the "Documentation";
+  to use, understand, copy, modify, and distribute copies of the "Software" and the "Documentation",
+  and to permit persons to whom it is provided, to do the same.
 
-Upon recognition of a significant problem within the Software or Documentation,
-the person agrees to report the problem with sufficient detail to the maintainer/s.
+Notification of license:
+- This entire license shall be included without modification in all copies and derivative works of the "Software" or the "Documentation".
 
-The Software and the Documentation is provided "AS IS", without warranty, stated or implied.
-Authors and maintainers of the Software and the Documentation are not liable for any claim or liability, stated or implied.
+Reporting faults:
+- Upon recognition of a relevant issue, the person agrees to report the problem with sufficient detail to the Author and any maintainer/s.
 
-Users of the Software or the Documentation may be liable for claims or damages dependent on the specific use; with consideration to local law.
+Warranty:
+- The Software and the Documentation is provided by the author "AS IS", without warranty, stated or implied.
+
+Liability:
+- Authors, maintainers and users of the Software and the Documentation are seperately liable for their own actions, with consideration to local law.
+
+Derivative Works:
+- Where modification of the Software or the Documentation has occurred, the Software or the Documentation becomes a 'derivative work'.
+- Each derivative work is owned by its new author.
+- A derivative work must not be attributed to the Author of the original work without prior permission.
+- Each derivative work must be named differently to original work.
+- Each derivative work must make available the Contact Email for the Author of the work it was derived from.
+- Each derivative work must make reference to the work it was derived from.
+- Each derivative work must make reference to the most recent version of the original work; that is, the "Software" and the "Documentation".
