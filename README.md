@@ -1,11 +1,11 @@
 # setup-netfilter
-A collection of dash shell scripts that build a config file for use with NetFilter.
-This should assist (or completely automate) the setup of NetFilter within Linux-based clients and servers.
+
+https://git.netfilter.org/nftables/tree/src/payload.c
+Line 342
+
+"
+if (base != PROTO_BASE_TRANSPORT_HDR)
+   return;
+"
 
 Please read the LICENSE file.
-
-TODO:
-
-- Write the rule management CLI as defined in setup_netfilter_operation.txt
-
-- Automate managment of sets containing netblocks announced by specific Autonomous System Numbers
