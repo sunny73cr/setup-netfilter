@@ -1,20 +1,19 @@
 Copyright 2024-2025
-Author: Dylan Avery
+Author: sunny73cr
 Contact Email: sunny73cr@protonmail.com
 
 Definitions:
 the "Software" is "setup-netfilter", currently accessible at the URI: https://github.com/sunny73cr/setup-netfilter
-the "Documentation" is "setup_netfilter_documentation.odt", it is made available alongside the Software.
-the "Author" of "setup-netfilter" is Dylan Avery.
+the "Documentation" is not available.
 
 Permissions granted:
 - Subject to the conditions stated in this licence; permission is hereby granted, free of charge,
   to any person obtaining a copy of the "Software", and the "Documentation";
-  to use, understand, copy, modify, and distribute copies of the "Software" and the "Documentation",
+  to use, understand, copy, modify, and distribute copies of the "Software",
   and to permit persons to whom it is provided, to do the same.
 
 Notification of license:
-- This entire license shall be included without modification in all copies and derivative works of the "Software" or the "Documentation".
+- This entire license shall be included without modification in all copies and derivative works of the "Software".
 
 Reporting faults:
 - Upon recognition of a relevant issue, the person agrees to report the problem with sufficient detail to the Author and any maintainer/s.
@@ -26,7 +25,7 @@ Liability:
 - Authors, maintainers and users of the Software and the Documentation are seperately liable for their own actions, with consideration to local law.
 
 Derivative Works:
-- Where modification of the Software or the Documentation has occurred, the new version becomes a 'derivative work'.
+- Where modification of the Software has occurred, the new version becomes a 'derivative work'.
 - Each derivative work is owned by its new author.
 - A derivative work must not be attributed to the Author of the original work without prior permission.
 - Each derivative work must be named differently to original work.
