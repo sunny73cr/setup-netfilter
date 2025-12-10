@@ -656,15 +656,36 @@ if [ -n "$ROOT_DELAY_RANGE_BEGIN" ] || [ -n "$ROOT_DELAY_RANGE_END" ]; then
 	printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ROOT_DELAY,16 0 \\\\\n";
 
 	printf "\\t#Fractions\n";
+	#
+	# Seeing as nobody wishes to publicly recognise my mistake: you can have
+	# the fix that I've had locally for a while now.
+	#
+	# = (target time / represented time) * bit width of storage for represented time.
+	#
+	# one fraction of one thousand milliseconds represented in a 16-bit unsigned integer 
+	# (which has a maximum value of '65,535') is '65.535'.
+	#
+	# N/B: This is how floating point numbers work most of the time.
+	# It is why there are 'floating point errors', at all.
+	# They are fractions, not rounding errors or bit flips due to it's
+	# length in memory. Their design is not prone to failure, they are
+	# an intentional failure. It makes it quick and easy to estimate
+	# things for graphical work.
+	#
+	# If you want an accurate floating point number, use hexadecimal (4 bits per symbol) or base64! (6 bits per symbol).
+	# base64 with a binary exponent field works nicely, as it matches the capacity of traditional 'decimal' floating
+	# point numbers, while significantly improving on precision. The issue then becomes performance. You will likely
+	# not see much assistance from the circuits on your CPU die... and will have to emulate the functionality.
+	# ripple-carry adders, booths multiplication, etc. Above all else, remember the KISS principle.
 
 	if [ -n "$ROOT_DELAY_RANGE_BEGIN" ]; then
-		#fractions= (milliseconds * 1000) / 65536
-		ROOT_DELAY_RANGE_BEGIN_FRACTION=$(($ROOT_DELAY_RANGE_BEGIN*65536/1000));
+		#fractions= (milliseconds / 1000) * 65536
+		ROOT_DELAY_RANGE_BEGIN_FRACTION=$((($ROOT_DELAY_RANGE_BEGIN/1000)*65536));
 		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ROOT_DELAY_FRACTION,16 >= $ROOT_DELAY_RANGE_BEGIN_FRACTION \\\\\n";
 	fi
 	if [ -n "$ROOT_DELAY_RANGE_END" ]; then
-		#fractions= (milliseconds * 1000) / 65536
-		ROOT_DELAY_RANGE_END_FRACTION=$(($ROOT_DELAY_RANGE_END*65536/1000));
+		#fractions= (milliseconds / 1000) * 65536
+		ROOT_DELAY_RANGE_END_FRACTION=$((($ROOT_DELAY_RANGE_END/1000)*65536));
 		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ROOT_DELAY_FRACTION,16 <= $ROOT_DELAY_RANGE_END_FRACTION \\\\\n";
 	fi
 else
@@ -675,19 +696,19 @@ else
 	case $NETWORK_TYPE in
 		bad-wan)
 			printf "(maximum 400ms).\n";
-			ROOT_DELAY_MAX_FRACTION=$((400*65536/1000));
+			ROOT_DELAY_MAX_FRACTION=$(((400/1000)*65536));
 		;;
 		wan)
 			printf "(maximum 60ms).\n";
-			ROOT_DELAY_MAX_FRACTION=$((60*65536/1000));
+			ROOT_DELAY_MAX_FRACTION=$(((60/1000)*65536));
 		;;
 		man)
 			printf "(maximum 15ms).\n";
-			ROOT_DELAY_MAX_FRACTION=$((15*65536/1000));
+			ROOT_DELAY_MAX_FRACTION=$(((15/1000)*65536));
 		;;
 		lan)
 			printf "(maximum 5ms).\n";
-			ROOT_DELAY_MAX_FRACTION=$((5*65536/1000));
+			ROOT_DELAY_MAX_FRACTION=$(((5/1000)*65536));
 		;;
 	esac
 
@@ -717,13 +738,13 @@ if [ -n "$ROOT_DISPERSION_RANGE_BEGIN" ] || [ -n "$ROOT_DISPERSION_RANGE_END" ];
 	printf "\\t#Fractions\n";
 
 	if [ -n "$ROOT_DISPERSION_RANGE_BEGIN" ]; then
-		#fractions= (milliseconds * 1000) / 65536
-		ROOT_DISPERSION_RANGE_BEGIN_FRACTION=$(($ROOT_DISPERSION_RANGE_BEGIN*65536/1000));
+		#fractions= (milliseconds / 1000) * 65536
+		ROOT_DISPERSION_RANGE_BEGIN_FRACTION=$((($ROOT_DISPERSION_RANGE_BEGIN/1000)*65536));
 		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ROOT_DISPERSION_FRACTION,16 >= $ROOT_DISPERSION_RANGE_BEGIN_FRACTION \\\\\n";
 	fi
 	if [ -n "$ROOT_DISPERSION_RANGE_END" ]; then
-		#fractions= (milliseconds * 1000) / 65536
-		ROOT_DISPERSION_RANGE_END_FRACTION=$(($ROOT_DISPERSION_RANGE_END*65536/1000));
+		#fractions= (milliseconds / 1000) * 65536
+		ROOT_DISPERSION_RANGE_END_FRACTION=$((($ROOT_DISPERSION_RANGE_END/1000)*65535));
 		printf "\\t\\t@$OFFSET_MARKER,$BIT_OFFSET_ROOT_DISPERSION_FRACTION,16 <= $ROOT_DISPERSION_RANGE_END_FRACTION \\\\\n";
 	fi
 else
@@ -734,19 +755,19 @@ else
 	case $NETWORK_TYPE in
 		bad-wan)
 			printf "(maximum 400ms).\n";
-			ROOT_DISPERSION_MAX_FRACTION=$((400*65536/1000));
+			ROOT_DISPERSION_MAX_FRACTION=$(((400/1000)*65536));
 		;;
 		wan)
 			printf "(maximum 60ms).\n";
-			ROOT_DISPERSION_MAX_FRACTION=$((60*65536/1000));
+			ROOT_DISPERSION_MAX_FRACTION=$(((60/1000)*65536));
 		;;
 		man)
 			printf "(maximum 15ms).\n";
-			ROOT_DISPERSION_MAX_FRACTION=$((15*65536/1000));
+			ROOT_DISPERSION_MAX_FRACTION=$(((15/1000)*65536));
 		;;
 		lan)
 			printf "(maximum 5ms).\n";
-			ROOT_DISPERSION_MAX_FRACTION=$((5*65536/1000));
+			ROOT_DISPERSION_MAX_FRACTION=$(((5/1000)*65536));
 		;;
 	esac
 
